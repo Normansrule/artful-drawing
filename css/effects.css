@@ -1,0 +1,179 @@
+/* artful drawing effects layer.
+   Motion ideas adapted from React Bits, Magic UI, Animate UI and Motion Primitives,
+   rewritten as plain CSS. Everything here is decoration: remove this file and
+   every page still works. The reduced-motion rule in style.css switches it off. */
+
+@property --angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+/* ---------- shared keyframes ---------- */
+@keyframes fx-blur-word { from { opacity: 0; filter: blur(10px); transform: translateY(0.35em); } to { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes fx-gradient-pan { to { background-position: 200% 50%; } }
+@keyframes fx-shimmer { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(220%) skewX(-20deg); } }
+@keyframes fx-spin-angle { to { --angle: 360deg; } }
+@keyframes fx-marquee { to { transform: translateX(calc(-50% - 0.5rem)); } }
+@keyframes fx-marquee-rev { from { transform: translateX(calc(-50% - 0.5rem)); } to { transform: translateX(0); } }
+@keyframes fx-scan { from { transform: translateY(-10%); } to { transform: translateY(110%); } }
+@keyframes fx-pulse { 50% { opacity: 0.35; } }
+@keyframes fx-marching { to { stroke-dashoffset: -24; } }
+
+/* Blur-in headline words */
+.fx-blur-in .fx-word { display: inline-block; animation: fx-blur-word 0.8s cubic-bezier(.2,.7,.2,1) both; }
+
+/* Scroll reveal */
+.fx-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.2,.7,.2,1); }
+.fx-reveal.is-in { opacity: 1; transform: none; }
+
+/* Reading progress bar */
+.fx-progress { position: fixed; left: 0; top: 0; height: 3px; width: 100%; transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--pink), var(--sun), var(--teal)); z-index: 100; pointer-events: none; }
+
+/* Animated gradient text (React Bits "GradientText") */
+.fx-gradient-text {
+  background: linear-gradient(90deg, #ff4f87, #ffce3a, #5ce1e6, #7b61ff, #ff4f87);
+  background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: fx-gradient-pan 6s linear infinite;
+  text-shadow: none;
+}
+
+/* Shimmer button (Magic UI "ShimmerButton") */
+.btn-shimmer { position: relative; overflow: hidden; isolation: isolate; }
+.btn-shimmer::after {
+  content: ''; position: absolute; inset: 0; width: 40%; z-index: -1;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation: fx-shimmer 2.8s ease-in-out infinite;
+}
+
+/* Border beam (Magic UI "BorderBeam"): a light that travels around an outline */
+.fx-beam { position: relative; isolation: isolate; }
+.fx-beam::before {
+  content: ''; position: absolute; inset: -2px; border-radius: inherit; padding: 2px; z-index: -1;
+  background: conic-gradient(from var(--angle), transparent 0 70%, var(--pink) 80%, var(--sun) 88%, transparent 96%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: fx-spin-angle 4s linear infinite;
+}
+
+/* Spotlight glow that follows the pointer (--mx/--my set by fx.js) */
+.fx-spot, .tile, .template-card, .ref-list > li, .playground { position: relative; }
+.fx-spot::after, .tile::after, .template-card::after, .ref-list > li::after, .playground::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.25s;
+  background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 79, 135, 0.16), transparent 70%);
+}
+.fx-spot:hover::after, .tile:hover::after, .template-card:hover::after, .ref-list > li:hover::after, .playground:hover::after { opacity: 1; }
+
+/* ---------- studio polish ---------- */
+.tile { transition: transform 140ms cubic-bezier(.2,.7,.2,1), box-shadow 140ms ease; }
+.tile svg { transition: transform 260ms cubic-bezier(.3,1.6,.5,1); }
+.tile:hover svg { transform: scale(1.12) rotate(-4deg); }
+.template-card { transition: transform 160ms ease, box-shadow 160ms ease; }
+.template-card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--pink); }
+
+.btn-bloom {
+  background: linear-gradient(100deg, #ff4f87, #ffb13a 45%, #7b61ff) padding-box;
+  background-size: 200% 100%; color: #fff; border-color: var(--ink);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2); transition: background-position 400ms ease;
+}
+.btn-bloom:hover { background-position: 100% 0; background-color: transparent; }
+.btn-bloom[aria-pressed='true'] { animation: fx-gradient-pan 1.2s linear infinite; }
+
+#canvas.is-blooming { cursor: progress; }
+#overlay rect[stroke-dasharray='7 5'] { animation: fx-marching 0.9s linear infinite; }
+
+.stage-bar { flex-wrap: wrap; row-gap: 0.4rem; }
+.monitor {
+  display: inline-flex; align-items: center; gap: 0.7rem;
+  font: 400 0.78rem/1 var(--body); color: var(--ink-2); font-variant-numeric: tabular-nums;
+  background: var(--panel); border: 1.5px solid var(--line); border-radius: 999px; padding: 0.3rem 0.7rem;
+}
+.monitor b { color: var(--ink); font-weight: 700; }
+.monitor svg { width: 60px; height: 16px; }
+.monitor polyline { fill: none; stroke: var(--teal); stroke-width: 1.5; stroke-linejoin: round; }
+.monitor.is-slow polyline { stroke: var(--pink); }
+.monitor::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: fx-pulse 2s ease-in-out infinite; }
+.monitor.is-slow::before { background: var(--pink); }
+
+/* ---------- reading pages ---------- */
+.toc a[aria-current='location'] { font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-color: var(--pink); }
+.toc a { color: var(--ink-2); transition: color 150ms; }
+.hero-strip a { transition: transform 200ms cubic-bezier(.3,1.5,.5,1); }
+.hero-strip a:hover { transform: translateY(-4px) rotate(-1.5deg); }
+.demo figure svg { transition: transform 200ms ease, box-shadow 200ms ease; }
+.demo figure:hover svg { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--pink); }
+
+/* Interactive playgrounds (inspired by Transformer Explainer and LLM Visualization) */
+.playground {
+  margin: 1.5rem 0 2rem; background: var(--panel); border: 2px solid var(--ink); border-radius: 16px;
+  box-shadow: 5px 5px 0 var(--sun); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: hidden;
+}
+.playground .pg-view { background: #fff; border-right: 2px solid var(--ink); display: grid; place-items: center; }
+.playground .pg-view svg { width: 100%; height: auto; display: block; }
+.playground .pg-controls { padding: 1rem 1.1rem 1.1rem; display: grid; gap: 0.8rem; align-content: start; }
+.playground .pg-title { font: 800 1.1rem/1.2 var(--display); margin: 0; }
+.playground .pg-eyebrow { font: 700 0.72rem/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); }
+.playground label { font-size: 0.85rem; font-weight: 700; display: flex; justify-content: space-between; gap: 0.5rem; }
+.playground output { font-variant-numeric: tabular-nums; color: var(--pink); font-weight: 700; }
+.playground .pg-readout { font-size: 0.88rem; color: var(--ink-2); background: var(--tint); border-radius: 10px; padding: 0.6rem 0.7rem; margin: 0; min-height: 3.2em; }
+.playground .pg-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.playground .seg { display: inline-flex; border: 2px solid var(--ink); border-radius: 999px; overflow: hidden; }
+.playground .seg button { font: 700 0.8rem/1 var(--body); padding: 0.45rem 0.7rem; background: #fff; color: var(--ink); border: 0; cursor: pointer; }
+.playground .seg button[aria-pressed='true'] { background: var(--ink); color: #fff; }
+@media (max-width: 760px) {
+  .playground { grid-template-columns: 1fr; }
+  .playground .pg-view { border-right: 0; border-bottom: 2px solid var(--ink); }
+}
+
+/* ---------- v1.3: pen, draw along, welcome ---------- */
+.sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.pen-bar { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem; border-radius: 999px; border: 1.5px solid var(--line); background: var(--tint); }
+.pen-bar select { width: auto; padding: 0.3rem 0.4rem; border-radius: 999px; font-size: 0.82rem; }
+.pen-bar input[type='color'] { width: 2rem; height: 1.8rem; border-radius: 50%; padding: 1px; }
+.pen-bar .pen-size input { width: 70px; }
+.pen-btn { border-radius: 999px; }
+.pen-btn[aria-pressed='true'] { background: linear-gradient(100deg, #ff4f87, #ffb13a); color: #fff; border-color: transparent; box-shadow: 0 0 18px -4px rgba(255, 79, 135, 0.9); }
+#canvas.pen-on { cursor: crosshair; }
+#canvas .ghost { transition: opacity 300ms; }
+
+.canvas-frame { position: relative; }
+.guide-card {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 5; width: min(460px, calc(100% - 28px));
+  background: var(--panel-solid, #fff); color: var(--ink); border: 1.5px solid var(--line); border-radius: 18px; padding: 0.85rem 1rem 0.95rem;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 79, 135, 0.18);
+  animation: gd-in 380ms cubic-bezier(.2, .9, .3, 1.2);
+}
+@keyframes gd-in { from { opacity: 0; transform: translate(-50%, 16px) scale(0.97); } }
+.guide-top { display: flex; align-items: center; justify-content: space-between; }
+.guide-count { font: 700 0.72rem/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); }
+.guide-title { margin: 0.3rem 0 0.2rem; font-size: 1.25rem; }
+.guide-text { margin: 0; color: var(--ink-2); font-size: 0.95rem; }
+.guide-dots { display: flex; gap: 5px; margin: 0.7rem 0; }
+.guide-dots i { flex: 1; height: 5px; border-radius: 5px; background: var(--line); }
+.guide-dots i.now { background: var(--sun); }
+.guide-dots i.done { background: linear-gradient(90deg, #ff4f87, #8b6bff); }
+.guide-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.btn-quiet { background: transparent !important; border-color: transparent !important; text-decoration: underline; opacity: 0.8; }
+
+.panel-intro { margin: 0.9rem 1rem 0.2rem; color: var(--ink-2); font-size: 0.92rem; }
+.recipe-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; padding: 0.8rem 1rem 1.2rem; }
+.recipe-card {
+  display: grid; gap: 0.25rem; text-align: left; padding: 6px 6px 9px; border-radius: 14px; cursor: pointer; color: var(--ink);
+  background: var(--tint); border: 1.5px solid var(--line); transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms;
+}
+.recipe-card svg { width: 100%; height: auto; border-radius: 10px; display: block; }
+.recipe-card:hover, .recipe-card:focus-visible { transform: translateY(-3px); border-color: var(--pink); box-shadow: 0 10px 24px -12px rgba(255, 79, 135, 0.8); }
+.rc-name { font: 800 0.98rem/1.1 var(--display); padding: 0 3px; }
+.rc-meta { font-size: 0.72rem; color: var(--ink-2); padding: 0 3px; }
+
+.welcome { max-width: 760px; width: calc(100% - 2rem); border-radius: 24px; padding: 1.6rem; border: 1.5px solid var(--line); background: var(--panel-solid, #fff); color: var(--ink); }
+.welcome h2 { margin: 0 0 0.3rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
+.welcome > p { color: var(--ink-2); margin: 0 0 1.2rem; }
+.welcome-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+.welcome-card {
+  display: grid; gap: 0.35rem; text-align: left; padding: 1.1rem; border-radius: 18px; cursor: pointer; color: var(--ink);
+  background: var(--tint); border: 1.5px solid var(--line); font: inherit; transition: transform 160ms ease, border-color 160ms, box-shadow 160ms;
+}
+.welcome-card:hover, .welcome-card:focus-visible { transform: translateY(-3px); border-color: var(--pink); box-shadow: 0 16px 34px -16px rgba(255, 79, 135, 0.9); }
+.welcome-card strong { font: 800 1.2rem/1.1 var(--display); }
+.welcome-card span:last-child { color: var(--ink-2); font-size: 0.9rem; }
+.wc-icon { font-size: 1.8rem; line-height: 1; width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #ff4f87, #8b6bff); color: #fff; }
+@media (max-width: 620px) { .welcome-grid, .recipe-grid { grid-template-columns: 1fr; } }
+.guiding .toast { top: 84px; bottom: auto; }

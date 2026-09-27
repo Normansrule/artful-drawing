@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>artful drawing studio: draw with blocks and algorithms</title>
+  <meta name="theme-color" content="#221f4f">
+  <meta name="description" content="Make butterflies, ghosts, snowflakes, trees and anything else from simple blocks and drawing algorithms. Works with just a keyboard and a mouse, right in your browser.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/effects.css">
+  <link rel="stylesheet" href="css/night.css">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("artful-drawing:theme")||"night"}catch(e){document.documentElement.dataset.theme="night"}</script>
+</head>
+<body class="page-studio">
+  <a class="skip-link" href="#canvas">Skip to the canvas</a>
+
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="artful drawing home page">
+      <img src="favicon.svg" alt="" width="30" height="30">
+      <span>artful drawing</span>
+    </a>
+    <nav class="site-nav" aria-label="Pages">
+      <a href="studio.html" aria-current="page">Studio</a>
+      <a href="learn.html">Learn</a>
+      <a href="references.html">References</a>
+    </nav>
+    <div class="top-actions">
+      <button class="btn" id="btn-undo" title="Undo (Ctrl+Z)">Undo</button>
+      <button class="btn" id="btn-redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <button class="btn btn-bloom" id="btn-bloom" title="Watch your picture assemble itself (B)"><span aria-hidden="true">▶</span> Bloom</button>
+      <button class="btn" id="btn-shuffle" title="Recolor the picture with a random palette">Shuffle colors</button>
+      <button class="btn" id="btn-share" title="Copy a link that opens this exact picture">Copy share link</button>
+      <details class="menu" id="save-menu">
+        <summary class="btn btn-primary">Save</summary>
+        <div class="menu-list">
+          <button data-act="png">Download picture (PNG)</button>
+          <button data-act="svg">Download vector (SVG)</button>
+          <button data-act="video">Download bloom animation (video)</button>
+          <button data-act="json">Save project file</button>
+          <button data-act="open">Open project file</button>
+          <button data-act="new">Start a blank canvas</button>
+        </div>
+      </details>
+      <button class="btn btn-round" id="btn-help" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">?</button>
+    </div>
+  </header>
+
+  <main class="studio">
+    <aside class="shelf" aria-label="Blocks and starter pictures">
+      <div class="tabs" role="tablist" aria-label="Shelf">
+        <button role="tab" id="tab-blocks" aria-controls="panel-blocks" aria-selected="true">Blocks</button>
+        <button role="tab" id="tab-guide" aria-controls="panel-guide" aria-selected="false" tabindex="-1">Draw along</button>
+        <button role="tab" id="tab-templates" aria-controls="panel-templates" aria-selected="false" tabindex="-1">Pictures</button>
+      </div>
+      <div class="tab-panel" id="panel-blocks" role="tabpanel" aria-labelledby="tab-blocks"></div>
+      <div class="tab-panel" id="panel-guide" role="tabpanel" aria-labelledby="tab-guide" hidden></div>
+      <div class="tab-panel" id="panel-templates" role="tabpanel" aria-labelledby="tab-templates" hidden></div>
+    </aside>
+
+    <section class="stage" aria-label="Canvas">
+      <div class="stage-bar">
+        <div class="pen-bar" role="group" aria-label="Pen">
+          <button class="btn pen-btn" id="btn-pen" aria-pressed="false" title="Draw freehand (P)"><span aria-hidden="true">✎</span> Pen</button>
+          <label class="pen-opt"><span class="sr-only">Pen symmetry</span>
+            <select id="pen-sym" title="Pen symmetry">
+              <option value="none">No symmetry</option>
+              <option value="mirror" selected>Mirror</option>
+              <option value="spin4">Spin × 4</option>
+              <option value="spin6">Spin × 6</option>
+              <option value="kaleido6">Kaleidoscope × 6</option>
+              <option value="kaleido8">Kaleidoscope × 8</option>
+              <option value="kaleido12">Kaleidoscope × 12</option>
+            </select></label>
+          <label class="pen-opt" title="Pen color"><span class="sr-only">Pen color</span><input type="color" id="pen-color" value="#ff4f87"></label>
+          <label class="pen-opt pen-size" title="Pen size"><span class="sr-only">Pen size</span><input type="range" id="pen-size" min="2" max="30" value="8"></label>
+        </div>
+        <label class="switch"><input type="checkbox" id="opt-guides" checked> Guides</label>
+        <label class="switch"><input type="checkbox" id="opt-snap"> Snap to 10px</label>
+        <span class="stage-status" id="stage-status"></span>
+        <div class="monitor" id="monitor" role="group" aria-label="Render monitor">
+          <span><b id="mon-blocks">0</b> blocks</span>
+          <span><b id="mon-shapes">0</b> shapes</span>
+          <span title="Time to draw the last frame"><b id="mon-ms">0</b> ms</span>
+          <svg id="mon-spark" viewBox="0 0 60 16" aria-hidden="true"><polyline points="" /></svg>
+        </div>
+      </div>
+      <div class="canvas-frame" id="canvas-frame">
+        <div class="guide-card" id="guide" role="region" aria-label="Draw along guide" hidden>
+          <div class="guide-top"><span class="guide-count" id="guide-count"></span><button class="icon-btn" id="guide-exit" aria-label="Stop drawing along" title="Stop drawing along">✕</button></div>
+          <h3 class="guide-title" id="guide-title"></h3>
+          <p class="guide-text" id="guide-text" aria-live="polite"></p>
+          <div class="guide-dots" id="guide-dots" aria-hidden="true"></div>
+          <div class="guide-actions" id="guide-actions"></div>
+        </div>
+        <svg id="canvas" viewBox="0 0 800 800" tabindex="0" role="application"
+             aria-label="Drawing canvas. Arrow keys move the selected block. Comma and period change which block is selected."
+             aria-describedby="canvas-help"></svg>
+      </div>
+      <p class="stage-hint" id="canvas-help">
+        Click to select, drag to move. Scroll to resize, <kbd>Shift</kbd>+scroll to rotate.
+        Press <kbd>?</kbd> for every shortcut.
+      </p>
+    </section>
+
+    <aside class="inspector" aria-label="Settings">
+      <div id="inspector"></div>
+      <section class="layers" aria-labelledby="layers-title">
+        <h2 id="layers-title">Layers</h2>
+        <p class="note">Top of the list is drawn on top.</p>
+        <ol id="layers"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <form method="dialog" class="dialog-body">
+      <h2 id="help-title">Keyboard and mouse</h2>
+      <p>Everything in artful drawing can be done with a keyboard, a mouse, or both.</p>
+      <div class="shortcut-grid">
+        <section>
+          <h3>Mouse</h3>
+          <dl>
+            <dt>Click</dt><dd>Select a block</dd>
+            <dt>Drag</dt><dd>Move it</dd>
+            <dt>Scroll</dt><dd>Resize it</dd>
+            <dt><kbd>Shift</kbd> + scroll</dt><dd>Rotate it</dd>
+            <dt>Click empty space</dt><dd>Select nothing (shows canvas settings)</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Selected block</h3>
+          <dl>
+            <dt><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></dt><dd>Move 1px (hold <kbd>Shift</kbd> for 10px)</dd>
+            <dt><kbd>+</kbd> / <kbd>−</kbd></dt><dd>Grow or shrink</dd>
+            <dt><kbd>R</kbd> / <kbd>Shift</kbd>+<kbd>R</kbd></dt><dd>Rotate 15° either way</dd>
+            <dt><kbd>F</kbd></dt><dd>Flip left to right</dd>
+            <dt><kbd>M</kbd></dt><dd>Add or remove a Mirror repeat</dd>
+            <dt><kbd>[</kbd> / <kbd>]</kbd></dt><dd>Send backward, bring forward</dd>
+            <dt><kbd>H</kbd></dt><dd>Hide</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>D</kbd></dt><dd>Duplicate</dd>
+            <dt><kbd>Delete</kbd></dt><dd>Delete</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Everywhere</h3>
+          <dl>
+            <dt><kbd>,</kbd> / <kbd>.</kbd></dt><dd>Select previous or next block</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Select nothing</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>Undo</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></dt><dd>Redo</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>Save project file</dd>
+            <dt><kbd>G</kbd></dt><dd>Show or hide guides</dd>
+            <dt><kbd>B</kbd></dt><dd>Play the bloom animation</dd>
+            <dt><kbd>P</kbd></dt><dd>Pen on or off (draw freehand)</dd>
+            <dt><kbd>?</kbd></dt><dd>This list</dd>
+          </dl>
+        </section>
+      </div>
+      <p class="note">On a Mac, use <kbd>⌘</kbd> wherever this says <kbd>Ctrl</kbd>.</p>
+      <button class="btn btn-primary" value="close">Close</button>
+    </form>
+  </dialog>
+
+  <input type="file" id="file-input" accept=".json,application/json" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p class="noscript">artful drawing needs JavaScript turned on to draw.</p></noscript>
+  <script type="module" src="js/studio.js"></script>
+  <script type="module" src="js/theme.js"></script>
+<dialog id="welcome" class="welcome" aria-labelledby="welcome-title">
+  <h2 id="welcome-title">What would you like to draw?</h2>
+  <p>No drawing skills needed. Pick a way to start; you can switch any time.</p>
+  <div class="welcome-grid">
+    <button class="welcome-card" data-start="guide"><span class="wc-icon" aria-hidden="true">🦋</span><strong>Draw along</strong><span>Step-by-step guides with a faint picture to follow, like tracing paper.</span></button>
+    <button class="welcome-card" data-start="pen"><span class="wc-icon" aria-hidden="true">✎</span><strong>Doodle with the pen</strong><span>Draw freehand and watch every line mirror into a kaleidoscope.</span></button>
+    <button class="welcome-card" data-start="picture"><span class="wc-icon" aria-hidden="true">🖼</span><strong>Start from a picture</strong><span>Open a finished drawing and change anything you like.</span></button>
+    <button class="welcome-card" data-start="blank"><span class="wc-icon" aria-hidden="true">◻</span><strong>Blank canvas</strong><span>Pick shapes from the shelf and build your own.</span></button>
+  </div>
+</dialog>
+</body>
+</html>

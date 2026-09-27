@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>artful drawing: drawing made easy, one shape at a time</title>
+  <meta name="description" content="A free drawing studio in your browser. No drawing skills needed: follow a guided drawing, doodle with a pen that draws in symmetry, or build butterflies, ghosts, snowflakes and trees from simple shapes using just a keyboard and a mouse.">
+  <meta name="theme-color" content="#0d0b24">
+  <meta property="og:title" content="artful drawing: drawing made easy">
+  <meta property="og:description" content="Guided drawings, a symmetry pen, and simple shapes that mirror, spin and repeat. Free, open source, keyboard friendly.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script>
+    // Old share links pointed at the site root. Send them to the studio.
+    if (/(^|[#&])(scene|template)=/.test(location.hash)) location.replace('studio.html' + location.hash);
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/effects.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body class="page-home">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="home-top">
+    <a class="brand" href="index.html" aria-label="artful drawing home page">
+      <img src="favicon.svg" alt="" width="30" height="30">
+      <span>artful drawing</span>
+    </a>
+    <nav class="site-nav" aria-label="Pages">
+      <a href="studio.html">Studio</a>
+      <a href="learn.html">Learn</a>
+      <a href="references.html">References</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn-glow btn-shimmer" href="studio.html">Start drawing</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-fallback" aria-hidden="true"></div>
+      <canvas class="hero-fluid" id="fluid" aria-hidden="true"></canvas>
+      <div class="stickers" id="stickers" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow fx-beam"><span class="dot" aria-hidden="true"></span> Free · no drawing skills needed · runs in your browser</p>
+          <h1 id="hero-title">Drawing is easier than you <span class="accent fx-gradient-text">think.</span></h1>
+          <p class="lede">Pick a shape, place it, and let a simple rule mirror, spin or repeat it into something beautiful. Follow a guided drawing step by step, doodle with a pen that draws in perfect symmetry, or start from a finished picture. All you need is a keyboard and a mouse.</p>
+          <div class="hero-ctas">
+            <a class="btn-glow btn-shimmer magnet" href="studio.html">Start drawing <span aria-hidden="true">→</span></a>
+            <a class="btn-ghost magnet" href="studio.html#guide=butterfly">Draw along with a guide</a>
+          </div>
+          <p class="hero-note"><span>No drawing skills needed</span><span>No sign-up</span><span>Nothing to install</span></p>
+        </div>
+
+        <figure class="hero-art hud" aria-labelledby="hero-art-title">
+          <span class="hud-corner tl"></span><span class="hud-corner tr"></span><span class="hud-corner bl"></span><span class="hud-corner br"></span>
+          <div class="hud-screen"><a id="hero-link" href="studio.html" aria-label="Open this picture in the studio"><svg id="hero-svg" viewBox="0 0 800 800" role="img" aria-labelledby="hero-art-title"></svg></a></div>
+          <figcaption class="hud-bar">
+            <span class="live">Live</span>
+            <span class="hud-title" id="hero-art-title">Butterfly</span>
+            <span><b id="hero-blocks">0</b> blocks</span>
+            <span><b id="hero-shapes">0</b> shapes</span>
+          </figcaption>
+          <div class="hud-bar hud-tags" id="hero-tags" aria-label="Repeats used"></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Marquee of starter pictures -->
+    <section class="home-section marquee-section" aria-label="Starter pictures">
+      <div class="marquee"><div class="marquee-track" id="marquee-a"></div></div>
+      <div class="marquee reverse"><div class="marquee-track" id="marquee-b"></div></div>
+    </section>
+
+    <!-- Three ways to start -->
+    <section class="home-section" aria-labelledby="ways-title" style="padding-top:2rem">
+      <div class="home-wrap">
+        <p class="kicker">Three ways to start</p>
+        <h2 id="ways-title">Pick the easy way that suits you.</h2>
+        <div class="trio">
+          <a class="way" href="studio.html#guide=butterfly">
+            <span class="way-num">1</span><strong>Draw along</strong>
+            <span>Seven step-by-step guides. A faint copy of the finished picture sits on the canvas like tracing paper, and every step has a "Do this step" button if you get stuck.</span>
+            <em>Try the butterfly →</em>
+          </a>
+          <a class="way" href="studio.html#start=pen">
+            <span class="way-num">2</span><strong>Doodle with the pen</strong>
+            <span>Draw freehand and every line is mirrored or spun into a kaleidoscope. Close a loop and it fills with color. Wobbly lines come out smooth.</span>
+            <em>Open the pen →</em>
+          </a>
+          <a class="way" href="studio.html#template=ghost">
+            <span class="way-num">3</span><strong>Change a picture</strong>
+            <span>Open one of 13 finished pictures and click any part to recolor, resize or move it. Nothing can break: undo remembers 150 steps.</span>
+            <em>Open the ghost →</em>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scroll story -->
+    <section class="story" id="story" aria-labelledby="story-title">
+      <div class="story-sticky">
+        <div class="story-grid">
+          <div>
+            <p class="kicker">How it works</p>
+            <h2 id="story-title" class="home-h2">Nine blocks. One butterfly.</h2>
+            <p class="sub">Scroll to build it. Every step is something you can do in the studio with a click or a key.</p>
+            <ol class="story-steps" id="story-steps">
+              <li><strong>Place one Wing block.</strong><p>Drag it right of the center line. Give it a gradient fill and a dark outline.</p></li>
+              <li><strong>Press M to mirror it.</strong><p>The Mirror repeat copies and flips it across the center. Half the work, a whole pair of wings.</p></li>
+              <li><strong>Step and repeat the spots.</strong><p>One circle, three copies, each smaller than the last. The mirror doubles them.</p></li>
+              <li><strong>Add a body and a face.</strong><p>Two circles, a curve for the antennae and a Cute face block on top.</p></li>
+              <li><strong>Scatter the sparkles.</strong><p>26 stars from one block, placed by a random seed you can change.</p></li>
+            </ol>
+            <div class="story-rail" aria-hidden="true"><i id="story-rail"></i></div>
+          </div>
+          <figure class="story-art hud">
+            <span class="hud-corner tl"></span><span class="hud-corner tr"></span><span class="hud-corner bl"></span><span class="hud-corner br"></span>
+            <div class="hud-screen"><svg id="story-svg" viewBox="0 0 800 800" role="img" aria-label="A butterfly being built from blocks, step by step"></svg></div>
+            <figcaption class="hud-bar"><span class="hud-title" id="story-caption">Step 1 of 5</span><span><b id="story-shapes">0</b> shapes on screen</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bento: repeats and algorithms -->
+    <section class="home-section" aria-labelledby="bento-title">
+      <div class="home-wrap">
+        <p class="kicker">The rules</p>
+        <h2 id="bento-title">Six repeats and a handful of living algorithms.</h2>
+        <p class="sub">Stack them in any order. Each one repeats everything above it, so three simple rules can make something intricate.</p>
+        <div class="bento" id="bento"></div>
+      </div>
+    </section>
+
+    <!-- Symmetry painter -->
+    <section class="home-section paint-section" aria-labelledby="paint-title">
+      <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="home-wrap">
+        <p class="kicker">Play</p>
+        <h2 id="paint-title">Paint with <span class="fx-gradient-text">symmetry</span>.</h2>
+        <p class="sub">Drag anywhere on the dark canvas. Every stroke is copied around the center, the same Spin around and Mirror rules the studio uses. With the keyboard: focus the canvas and paint with the arrow keys.</p>
+        <div class="paint-wrap">
+          <canvas id="paint" class="paint-canvas" tabindex="0" aria-label="Symmetry painting canvas. Drag to paint, or use the arrow keys. Every stroke is copied around the center."></canvas>
+          <div class="paint-controls" role="group" aria-label="Painting controls">
+            <div class="seg" id="paint-n" role="group" aria-label="Number of copies">
+              <button type="button" data-n="4">4</button><button type="button" data-n="6">6</button><button type="button" data-n="8" aria-pressed="true">8</button><button type="button" data-n="12">12</button><button type="button" data-n="16">16</button>
+            </div>
+            <button type="button" class="chip" id="paint-mirror" aria-pressed="true">Kaleidoscope</button>
+            <button type="button" class="chip" id="paint-fade" aria-pressed="true">Trails fade</button>
+            <button type="button" class="chip" id="paint-clear">Clear</button>
+            <button type="button" class="chip chip-hot" id="paint-save">Save PNG</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="home-section" aria-labelledby="stats-title" style="padding-top:0">
+      <div class="home-wrap">
+        <h2 id="stats-title" class="sr-only">artful drawing in numbers</h2>
+        <div class="stats">
+          <div class="stat"><b class="ticker" id="stat-blocks" data-to="29">29</b><span>blocks on the shelf</span></div>
+          <div class="stat"><b class="ticker" id="stat-repeats" data-to="6">6</b><span>stackable repeats</span></div>
+          <div class="stat"><b class="ticker" id="stat-pictures" data-to="13">13</b><span>starter pictures</span></div>
+          <div class="stat"><b class="ticker" data-to="3000">3,000</b><span>copies from one block</span></div>
+          <div class="stat"><b class="ticker" data-to="0">0</b><span>things to install</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Keyboard -->
+    <section class="home-section" aria-labelledby="keys-title">
+      <div class="home-wrap keys-grid">
+        <div>
+          <p class="kicker">Keyboard and mouse</p>
+          <h2 id="keys-title">No tablet. No steady hand.</h2>
+          <p class="sub">Every action has a key. Move a pixel at a time, rotate in neat 15° turns, mirror with one letter. Try these keys: they work on the picture beside them.</p>
+          <div class="keycaps" id="keycaps" role="group" aria-label="Try the studio keys">
+            <button class="keycap" data-key="ArrowLeft" aria-label="Move left">←</button>
+            <button class="keycap" data-key="ArrowUp" aria-label="Move up">↑</button>
+            <button class="keycap" data-key="ArrowDown" aria-label="Move down">↓</button>
+            <button class="keycap" data-key="ArrowRight" aria-label="Move right">→</button>
+            <button class="keycap" data-key="r" aria-label="Rotate 15 degrees">R</button>
+            <button class="keycap" data-key="m" aria-label="Toggle mirror">M</button>
+            <button class="keycap" data-key="+" aria-label="Grow">+</button>
+            <button class="keycap" data-key="-" aria-label="Shrink">−</button>
+          </div>
+          <p class="key-log" id="key-log" aria-live="polite">Watching a demo. Press any key above to take over.</p>
+        </div>
+        <figure class="hud" style="max-width:480px;justify-self:center;width:100%;margin:0">
+          <span class="hud-corner tl"></span><span class="hud-corner tr"></span><span class="hud-corner bl"></span><span class="hud-corner br"></span>
+          <div class="hud-screen"><svg id="keys-svg" viewBox="0 0 800 800" role="img" aria-label="A heart block that moves when you press the keys"></svg></div>
+          <figcaption class="hud-bar"><span class="hud-title">Heart block</span><span id="keys-readout">x 520, y 400, 0°</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 3D ring gallery -->
+    <section class="home-section ring-section" aria-labelledby="ring-title">
+      <div class="home-wrap">
+        <p class="kicker">Starter pictures</p>
+        <h2 id="ring-title">Thirteen pictures, all made of blocks.</h2>
+        <p class="sub">Drag to spin the ring. Open any picture and click its parts to see exactly how it was built.</p>
+      </div>
+      <div class="ring-stage" id="ring-stage"><div class="ring" id="ring"></div></div>
+    </section>
+
+    <!-- Learn + references -->
+    <section class="home-section" aria-labelledby="learn-title" style="padding-top:0">
+      <div class="home-wrap">
+        <p class="kicker">Go deeper</p>
+        <h2 id="learn-title">The art and the math behind every block.</h2>
+        <div class="duo">
+          <a href="learn.html"><strong>Learn →</strong><span>Symmetry, the golden angle, fractals, color, composition and why cute things look cute, with live playgrounds and step-by-step recipes.</span></a>
+          <a href="references.html"><strong>References →</strong><span>Free museum collections, snowflake photographs, pattern books, color tools and the books behind the algorithms.</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section final" aria-labelledby="final-title">
+      <div class="home-wrap">
+        <h2 id="final-title">What will you <span class="fx-gradient-text">draw</span>?</h2>
+        <p class="sub" style="margin-inline:auto">Start from a blank canvas or open a butterfly, ghost, snowflake, tree, egg, mandala or kitty and make it yours.</p>
+        <div class="hero-ctas">
+          <a class="btn-glow btn-shimmer magnet" href="studio.html">Start drawing <span aria-hidden="true">→</span></a>
+          <a class="btn-ghost magnet" href="studio.html#guide=snowflake">Draw a snowflake in 2 minutes</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="home-foot">
+    <div class="home-wrap">
+      <p>artful drawing is free and open source under the MIT License. <a id="gh-link" href="https://github.com/">Source on GitHub</a> · <a href="learn.html">Learn</a> · <a href="references.html">References</a></p>
+      <p>Design credits: motion ideas from React Bits, Magic UI, Animate UI and Motion Primitives; ink simulation adapted from Pavel Dobryakov’s WebGL Fluid Simulation (MIT); scroll animation by GreenSock Animation Platform (GSAP), used under its free standard license; explain-by-playing inspired by Transformer Explainer and LLM Visualization.</p>
+    </div>
+  </footer>
+
+  <script src="vendor/gsap/gsap.min.js" defer></script>
+  <script src="vendor/gsap/ScrollTrigger.min.js" defer></script>
+  <script src="vendor/gsap/SplitText.min.js" defer></script>
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

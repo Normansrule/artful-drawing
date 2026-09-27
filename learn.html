@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learn artful drawing: blocks, algorithms and the art behind them</title>
+  <meta name="description" content="A friendly guide to drawing with blocks and repeat algorithms: symmetry, spirals, fractals, color and composition, with step-by-step recipes for butterflies, ghosts, trees, snowflakes and eggs.">
+  <meta name="theme-color" content="#0b0920">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/effects.css">
+  <link rel="stylesheet" href="css/night.css">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("artful-drawing:theme")||"night"}catch(e){document.documentElement.dataset.theme="night"}</script>
+</head>
+<body class="page-read">
+  <a class="skip-link" href="#main">Skip to the guide</a>
+
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="artful drawing home page">
+      <img src="favicon.svg" alt="" width="30" height="30">
+      <span>artful drawing</span>
+    </a>
+    <nav class="site-nav" aria-label="Pages">
+      <a href="studio.html">Studio</a>
+      <a href="learn.html" aria-current="page">Learn</a>
+      <a href="references.html">References</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn btn-primary btn-shimmer" href="studio.html">Open the studio</a>
+    </div>
+  </header>
+
+  <section class="read-hero">
+    <div class="inner">
+      <div>
+        <h1>Draw anything with a few blocks and a few <span class="fx-gradient-text">rules</span>.</h1>
+        <p>Every picture in artful drawing is a stack of simple shapes. The magic comes from <em>repeats</em>: small algorithms that mirror, spin, step, scatter and spiral one shape into many. This guide shows how each one works, why it looks good, and how artists have used the same ideas for centuries.</p>
+        <p>Every example below is live. Press <strong>Open in studio</strong> under any picture to take it apart, and drag the sliders in the <strong>playgrounds</strong> to feel what each number does.</p>
+      </div>
+      <div class="hero-strip" data-hero="butterfly,ghost,snowflake,christmas-tree,easter-eggs,mandala"></div>
+    </div>
+  </section>
+
+  <div class="read-layout">
+    <nav class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ol>
+        <li><a href="#blocks">1. Blocks</a></li>
+        <li><a href="#mirror">2. Mirror</a></li>
+        <li><a href="#radial">3. Spin around</a></li>
+        <li><a href="#step">4. Step and repeat</a></li>
+        <li><a href="#grid">5. Grid</a></li>
+        <li><a href="#scatter">6. Scatter and seeds</a></li>
+        <li><a href="#golden">7. The golden angle</a></li>
+        <li><a href="#stacking">8. Stacking repeats</a></li>
+        <li><a href="#fractals">9. Fractals and recursion</a></li>
+        <li><a href="#clip">10. Clipping (stencils)</a></li>
+        <li><a href="#shape">11. Shape language</a></li>
+        <li><a href="#cute">12. Why cute is cute</a></li>
+        <li><a href="#color">13. Color</a></li>
+        <li><a href="#composition">14. Composition</a></li>
+        <li><a href="#recipes">15. Recipes</a></li>
+        <li><a href="#keyboard">16. Keyboard and access</a></li>
+        <li><a href="#further">17. Going further</a></li>
+      </ol>
+    </nav>
+
+    <main class="prose" id="main">
+
+      <!-- 1 -->
+      <h2 id="blocks">1. Blocks: the only thing you draw</h2>
+      <p class="lead">A block is one shape with a position, a size, a turn, a color and a handful of settings of its own. That is the whole vocabulary.</p>
+      <p>You never draw lines point by point. You pick a block from the shelf, then adjust it. A circle becomes a sun, a head, a spot on a wing or a snowball depending on where it sits and what color it is. Blocks further down the Layers list are drawn first, so later blocks sit on top, just like cut paper on a table.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="one-block" data-caption="One Circle block."></figure>
+        <figure data-demo="two-blocks" data-caption="Add a Cute face block on top."></figure>
+        <figure data-demo="stacked" data-caption="Ghost, face and a soft shadow: three blocks."></figure>
+      </div></div>
+      <p>The shelf has four families:</p>
+      <ul>
+        <li><strong>Shapes</strong> are filled forms: circle, box, triangle, polygon, star, heart, petal, drop, egg, moon, ring, wing, ghost, blob and cloud.</li>
+        <li><strong>Lines</strong> are strokes: straight, curve, arc, wave, zigzag and spiral. Their color and thickness come from the outline settings.</li>
+        <li><strong>Algorithms</strong> are blocks that are themselves little programs: a fractal tree, a snowflake arm, the Koch snowflake, the Sierpinski triangle, a golden-angle seed spiral, a sunburst and a pattern filler.</li>
+        <li><strong>Characters</strong> hold the Cute face, which turns any shape into a creature.</li>
+      </ul>
+      <div class="callout"><p><strong>Easiest start:</strong> open the studio’s <a href="studio.html#guide=snowflake">Draw along</a> tab. A faint copy of the finished picture shows where each part goes, and every step has a “Do this step” button. Or press <kbd>P</kbd> and doodle with the pen: every line can be mirrored into a kaleidoscope.</p></div>
+      <div class="callout"><p><strong>Tip:</strong> give blocks names (the text box at the top of the inspector). “Left ear” is much easier to find in Layers than “Circle copy copy”.</p></div>
+
+      <!-- 2 -->
+      <h2 id="mirror">2. Mirror: draw half, get the whole</h2>
+      <p class="lead">Most living things are <em>bilaterally symmetric</em>: the left side mirrors the right. Butterflies, faces, leaves, beetles and people all share this.</p>
+      <p>Add a <strong>Mirror</strong> repeat (or press <kbd>M</kbd>) and the block is copied and flipped across a fold line. The fold is the center of the canvas unless you choose <em>This block</em> or <em>A point I choose</em>. Place your block <em>beside</em> the fold, not on it, or the copy lands exactly on top of the original.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="mirror-off" data-caption="One Wing block, placed right of center."></figure>
+        <figure data-demo="mirror-on" data-caption="Add Mirror: a butterfly. The body is a tall circle."></figure>
+        <figure data-demo="mirror-both" data-caption="Fold “Four corners” mirrors both ways."></figure>
+      </div></div>
+      <p>Designers call this a <em>reflection</em>. Because our brains read symmetry as health and order, a mirrored drawing instantly looks intentional. A small, deliberate break in symmetry (a tilted head, one raised antenna) adds life. To do that, give the one part that differs its own block with no mirror.</p>
+
+      <!-- 3 -->
+      <h2 id="radial">3. Spin around: flowers, mandalas, snowflakes</h2>
+      <p class="lead"><strong>Spin around</strong> copies a block around a center point, evenly spaced, like petals on a daisy or spokes on a wheel. Mathematicians call this <em>rotational symmetry</em>.</p>
+      <p>Six copies of one petal is a flower. Twelve copies with <em>Color shift per copy</em> turned up walk around the color wheel and give you a rainbow. Turn on <strong>Kaleidoscope</strong> and every other copy is mirrored too, which is exactly how a kaleidoscope’s two mirrors work. That combination of turning and flipping is called <em>dihedral symmetry</em>, and it is the symmetry of snowflakes, rose windows and most mandalas.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="radial-6" data-caption="6 petals around the center."></figure>
+        <figure data-demo="radial-12" data-caption="12 petals with a 30° color shift each."></figure>
+        <figure data-demo="kaleido" data-caption="8 tilted wings with Kaleidoscope on."></figure>
+      </div></div>
+      <div class="playground" data-playground="radial"></div>
+      <div class="callout"><p><strong>Rule of thumb:</strong> odd counts (5, 7) feel natural and floral; even counts (6, 8, 12) feel architectural and calm. Snow crystals always have 6 arms because of how water molecules lock together in ice.</p></div>
+
+      <!-- 4 -->
+      <h2 id="step">4. Step and repeat: growth and rhythm</h2>
+      <p class="lead"><strong>Step and repeat</strong> makes copies one after another. Each copy moves, turns, resizes and shifts color by the same amount as the last. It is the simplest kind of <em>iteration</em>: do the same small thing again and again.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="step-tree" data-caption="A triangle stepped up and shrunk: a fir tree."></figure>
+        <figure data-demo="step-swirl" data-caption="A square outline that turns 8° and shrinks 10% each step."></figure>
+        <figure data-demo="step-trail" data-caption="Dots that grow and change hue as they travel."></figure>
+      </div></div>
+      <p>Small numbers matter a lot here. A resize of 0.9 shrinks slowly and gives you dozens of visible steps; 0.6 disappears in four. The swirl above is the classic “whirling squares” sketch artists have drawn since the Bauhaus. Try changing only the turn from 8° to 3° and watch it turn into a tunnel.</p>
+
+      <!-- 5 -->
+      <h2 id="grid">5. Grid: wallpaper and textiles</h2>
+      <p class="lead"><strong>Grid</strong> fills rows and columns. With <em>Brick offset</em> every other row shifts half a step, which is how bricks, honeycombs and many fabric prints are laid out.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="grid-plain" data-caption="A plain 4 × 4 grid of hearts."></figure>
+        <figure data-demo="grid-brick" data-caption="Hexagons with Brick offset: a honeycomb."></figure>
+        <figure data-demo="grid-stars" data-caption="Stars with a color shift per copy."></figure>
+      </div></div>
+      <p>Mathematicians have proven there are exactly 17 ways to repeat a pattern across a flat surface using shifts, turns and mirrors. These are the <em>wallpaper groups</em>, and every one of them appears in the tile work of the Alhambra in Spain. You can build many of them in artful drawing by stacking Grid with Mirror or Spin around (see section 8).</p>
+
+      <!-- 6 -->
+      <h2 id="scatter">6. Scatter and seeds: controlled randomness</h2>
+      <p class="lead"><strong>Scatter</strong> sprinkles copies around at random, with a bit of variety in size, turn and color. Stars, snow, confetti, freckles and grass all look better scattered than lined up.</p>
+      <p>Computers cannot really roll dice. They use a formula that produces numbers that <em>look</em> random, starting from a number called the <strong>seed</strong>. The same seed always gives the same sprinkle, which means your picture never changes by itself, and a share link opens exactly what you saw. Change the seed to reshuffle.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="scatter-a" data-caption="60 stars, seed 3."></figure>
+        <figure data-demo="scatter-b" data-caption="Same settings, seed 4."></figure>
+        <figure data-demo="scatter-confetti" data-caption="Confetti: full color variety and rotation."></figure>
+      </div></div>
+      <p>Generative artists call this idea <em>seeded randomness</em>. It is how an artist can make ten thousand unique variations of a design and still reproduce any one of them.</p>
+
+      <!-- 7 -->
+      <h2 id="golden">7. The golden angle: how sunflowers pack seeds</h2>
+      <p class="lead">Turn by 137.5° between each seed, move a little further out each time, and you get the famous sunflower spiral. That angle is the <em>golden angle</em>, and it packs seeds with almost no gaps.</p>
+      <p>Why that number? If the turn were a simple fraction of a circle, such as 1/3 or 2/5, the seeds would line up in straight spokes with empty wedges between them. 137.5° is 360° divided by the golden ratio squared (about 2.618). The golden ratio is the “most irrational” number, the hardest to approximate with a fraction, so no two seeds ever line up. Nudge the angle by even a few tenths of a degree and the packing breaks.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="golden-137" data-caption="137.5°: the golden angle. Even packing."></figure>
+        <figure data-demo="golden-137-3" data-caption="137.3°: curved arms start to appear."></figure>
+        <figure data-demo="golden-140" data-caption="140°: clear spokes and gaps."></figure>
+      </div></div>
+      <div class="playground" data-playground="golden"></div>
+      <p>If you count the spirals curving each way in a real sunflower, pine cone or pineapple, you usually get two neighboring <em>Fibonacci numbers</em> (1, 1, 2, 3, 5, 8, 13, 21, 34, 55…). The pattern is called <em>phyllotaxis</em>, from the Greek for “leaf arrangement”. You can use it as a block (Seed spiral) or as a repeat (Golden spiral) that works on any shape:</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="golden-dots" data-caption="Golden spiral repeat on a small circle."></figure>
+        <figure data-demo="golden-petals" data-caption="The same repeat on petals, pointing outward."></figure>
+        <figure data-demo="galaxy" data-caption="Widening growth, a small turn and Spin × 3: a galaxy."></figure>
+      </div></div>
+
+      <!-- 8 -->
+      <h2 id="stacking">8. Stacking repeats: order matters</h2>
+      <p class="lead">A block can have several repeats. Each one repeats <em>everything above it</em> in the list. That is how three simple ideas become intricate.</p>
+      <p>Both pictures below use the same two repeats on the same circle: a Spin around with 10 copies, and a Step that shrinks each copy. In the first, the Step comes first and makes a little line of shrinking dots, which Spin then copies ten times. In the second, the Spin comes first and makes a ring, which Step then copies into smaller and smaller rings.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="stack-radial-step" data-caption="Step first, then Spin: 10 rays of dots."></figure>
+        <figure data-demo="stack-step-radial" data-caption="Spin first, then Step: a ring of dots, copied into smaller and smaller rings."></figure>
+      </div></div>
+      <div class="playground" data-playground="stack"></div>
+      <p>Use the ↑ and ↓ buttons on each repeat card to change the order. Programmers would call this <em>composition</em> of transformations; in plain words, the recipe runs top to bottom.</p>
+      <div class="callout"><p><strong>Performance note:</strong> copies multiply. Twelve spins of twenty steps of a grid of 36 is 8,640 shapes. artful drawing stops at 3,000 copies per block to keep your browser responsive.</p></div>
+
+      <!-- 9 -->
+      <h2 id="fractals">9. Fractals and recursion: rules that call themselves</h2>
+      <p class="lead">A <em>recursive</em> rule uses itself inside itself. “A branch is a stick with two smaller branches on its end” is a complete description of a tree, because each smaller branch follows the same rule.</p>
+      <p>The <strong>Fractal tree</strong> block applies that rule a set number of times (its <em>levels</em>). Two levels look like a slingshot. Five levels look like a winter tree. Nine levels, a little randomness and some leaves look alive. Every extra level doubles the number of tips, which is why going past nine gets slow.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="tree-2" data-caption="2 levels."></figure>
+        <figure data-demo="tree-5" data-caption="5 levels."></figure>
+        <figure data-demo="tree-9" data-caption="9 levels, randomness 0.25, leaves on."></figure>
+      </div></div>
+      <div class="playground" data-playground="tree"></div>
+      <p>The <strong>Koch snowflake</strong> (Helge von Koch, 1904) starts as a triangle. Every straight edge is replaced by an edge with a bump in the middle, then every edge of <em>that</em> shape gets a bump, and so on. Its outline grows longer forever while the area stays finite.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="koch-0" data-caption="Level 0: a triangle."></figure>
+        <figure data-demo="koch-1" data-caption="Level 1: a star of David outline."></figure>
+        <figure data-demo="koch-4" data-caption="Level 4: the snowflake."></figure>
+      </div></div>
+      <p>The <strong>Sierpinski triangle</strong> (Wacław Sierpiński, 1915) does the opposite: cut the middle out of a triangle, then cut the middle out of each of the three triangles left, forever. Long before Sierpiński, Cosmati stone floors in 13th-century Italian churches used the same design.</p>
+      <p>The <strong>Snowflake arm</strong> is a recursive branch too: the main arm grows side branches at an angle, and each side branch grows its own. Spin one arm around six times and you get a crystal much like the ones Wilson Bentley photographed in Vermont starting in 1885.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="sierpinski" data-caption="Sierpinski triangle, 5 levels."></figure>
+        <figure data-demo="crystal-arm" data-caption="One Snowflake arm block."></figure>
+        <figure data-demo="crystal" data-caption="The same arm with Spin around × 6."></figure>
+      </div></div>
+      <p>The botanist Aristid Lindenmayer formalized branching rules like these in 1968 as <em>L-systems</em>, now used to grow plants in films and games. See the References page for his free book.</p>
+
+      <!-- 10 -->
+      <h2 id="clip">10. Clipping: painting through a stencil</h2>
+      <p class="lead"><strong>Clip inside</strong> hides every part of a block that falls outside another block. It works exactly like a stencil or masking tape.</p>
+      <p>This is the secret to Easter eggs: a Pattern block (stripes, zigzags, dots, waves, scallops or checks) is much bigger than the egg, then clipped inside it. The same trick puts a garland inside a Christmas tree, stripes inside a fish, or a shadow inside a round cheek.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="clip-off" data-caption="An Egg and a Zigzag pattern, unclipped."></figure>
+        <figure data-demo="clip-on" data-caption="Pattern set to Clip inside the egg."></figure>
+      </div></div>
+      <p>Ukrainian <em>pysanky</em> eggs are traditionally decorated in bands: a line around the middle, then lines around the ends, then each band filled with its own motif. Try that with three clipped Pattern blocks, each moved to a different height.</p>
+
+      <!-- 11 -->
+      <h2 id="shape">11. Shape language: what shapes say</h2>
+      <p class="lead">Before anyone sees a face, they read the outline. Animators and character designers rely on three basic shapes.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="shape-round" data-caption="Circles and blobs: friendly, soft, safe."></figure>
+        <figure data-demo="shape-square" data-caption="Squares: steady, strong, a bit stubborn."></figure>
+        <figure data-demo="shape-spiky" data-caption="Triangles and points: energy, danger, speed."></figure>
+      </div></div>
+      <p>This is why heroes in cartoons are often built from circles, sturdy sidekicks from boxes, and villains from sharp triangles. Mixing them tells a story: a round character with one pointy detail (a spiky hairdo, a sharp tail) reads as “cute, with an edge”.</p>
+
+      <!-- 12 -->
+      <h2 id="cute">12. Why cute is cute</h2>
+      <p class="lead">In 1943 the scientist Konrad Lorenz described the <em>Kindchenschema</em> (“baby schema”): the features that make babies, puppies and kittens look adorable to us. Designers have used it ever since.</p>
+      <p>The recipe is simple: a big round head, a small body, large eyes set <strong>low</strong> on the face, a tiny mouth, soft rounded edges and rosy cheeks. Both drawings below use exactly the same blocks.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="cute-no" data-caption="Tall body, small face placed high: serious."></figure>
+        <figure data-demo="cute-yes" data-caption="Round body, big eyes placed low: cute."></figure>
+      </div></div>
+      <p>This is also why Japanese <em>kawaii</em> characters feel so friendly. For your own creatures: start with a Circle, Blob or Ghost block, drop a Cute face a little <em>below</em> center, turn Eye size up, and keep the Rosy cheeks on.</p>
+
+      <!-- 13 -->
+      <h2 id="color">13. Color: hue, value and saturation</h2>
+      <p class="lead">Every color has three parts. <strong>Hue</strong> is its name on the color wheel (red, blue, teal). <strong>Value</strong> is how light or dark it is. <strong>Saturation</strong> is how vivid or gray it is.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="hue-walk" data-caption="Hue: Step with a 45° color shift walks the wheel."></figure>
+        <figure data-demo="value-steps" data-caption="Value: one blue, from dark to light."></figure>
+        <figure data-demo="sat-steps" data-caption="Saturation: one orange, from gray to vivid."></figure>
+      </div></div>
+      <p><strong>Value does most of the work.</strong> If a picture looks muddy, it is almost always because the colors are too close in lightness, not because the hues are wrong. A quick check: squint at your picture. The main subject should stand out as a clearly lighter or darker shape.</p>
+      <h3>Color harmonies</h3>
+      <p>Harmonies are dependable combinations picked by their positions on the color wheel:</p>
+      <ul>
+        <li><strong>Complementary:</strong> opposite hues (blue and orange, purple and yellow). High energy; let one dominate.</li>
+        <li><strong>Analogous:</strong> neighbors (teal, green, lime). Calm and natural.</li>
+        <li><strong>Triadic:</strong> three hues evenly spaced (red, yellow, blue). Playful, like toys.</li>
+        <li><strong>Monochrome:</strong> one hue in many values. Elegant, and impossible to get wrong.</li>
+      </ul>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="harmony-comp" data-caption="Complementary: blue and orange."></figure>
+        <figure data-demo="harmony-analog" data-caption="Analogous: three neighboring greens."></figure>
+        <figure data-demo="harmony-triad" data-caption="Triadic: red, yellow and blue."></figure>
+      </div></div>
+      <p>In the studio, <strong>Shuffle colors</strong> swaps every color in your picture for one from a curated palette, and the palette row in the inspector lets you click to fill, <kbd>Shift</kbd>+click for a gradient’s second color, and <kbd>Alt</kbd>+click for the outline. Gradients and Glow fills add easy depth: use a lighter color where light hits and a deeper one in shadow.</p>
+      <div class="callout"><p><strong>Accessibility:</strong> about 1 in 12 men and 1 in 200 women have some color vision deficiency. Don’t rely on red versus green alone to separate things; a difference in value reads for everyone.</p></div>
+
+      <!-- 14 -->
+      <h2 id="composition">14. Composition: where things go</h2>
+      <p class="lead">Composition is the arrangement of shapes in the frame. A few habits make almost any picture stronger.</p>
+      <div class="demo"><div class="demo-row">
+        <figure data-demo="comp-center" data-caption="Everything centered: stable but static."></figure>
+        <figure data-demo="comp-thirds" data-caption="Thirds: moon and ghost on the grid lines."></figure>
+      </div></div>
+      <ul>
+        <li><strong>Rule of thirds.</strong> Turn on Guides (<kbd>G</kbd>) to see the canvas split into thirds. Placing the main subject near where lines cross feels more alive than dead center. Symmetric subjects such as mandalas and snowflakes are the exception; they love the center.</li>
+        <li><strong>One focal point.</strong> Decide what the picture is <em>about</em> and give it the strongest contrast, the brightest color or the sharpest detail. Everything else supports it.</li>
+        <li><strong>Negative space.</strong> The empty area around a subject is part of the design. Leave room to breathe.</li>
+        <li><strong>Overlap for depth.</strong> A shape in front of another instantly reads as closer. So do larger, brighter and more detailed shapes; things far away are smaller, paler and bluer (painters call this <em>atmospheric perspective</em>).</li>
+        <li><strong>Odd numbers.</strong> Three flowers look arranged; two or four look like a lineup.</li>
+      </ul>
+
+      <!-- 15 -->
+      <h2 id="recipes">15. Recipes</h2>
+      <p class="lead">Each of these matches a starter picture in the studio. Follow the steps from a blank canvas, or open the finished version and click its parts to see the settings.</p>
+
+      <h3>Butterfly</h3>
+      <ol>
+        <li>Add a <strong>Wing</strong>. Move it to the right of center (arrow keys with <kbd>Shift</kbd> move 10 pixels at a time).</li>
+        <li>Press <kbd>M</kbd> to mirror it. Set its Fill to Gradient and pick two colors.</li>
+        <li>Add a <strong>Circle</strong> for a spot, place it on the upper wing, add <strong>Step and repeat</strong> (3 copies, shrinking), then <strong>Mirror</strong>.</li>
+        <li>Add a tall, thin <strong>Circle</strong> in the center for the body, a round one for the head, and a <strong>Cute face</strong> on top.</li>
+        <li>Add a <strong>Curve</strong> for one antenna and mirror it. Finish with scattered 4-point <strong>Stars</strong> behind everything.</li>
+      </ol>
+      <p><a href="studio.html#template=butterfly">Open the finished butterfly →</a></p>
+
+      <h3>Cute ghost</h3>
+      <ol>
+        <li>Set the canvas background to Glow with a deep purple and a near-black.</li>
+        <li>Add a <strong>Ghost</strong> block. Fill: Glow, white to pale lavender. Adjust Waves and Wiggle for the hem.</li>
+        <li>Add a <strong>Cute face</strong> slightly above the ghost’s middle. Try the Joyful expression.</li>
+        <li>Add a <strong>Drop</strong> for one arm, turn it about 110°, and mirror it. Send it backward (<kbd>[</kbd>) so it sits behind the body.</li>
+        <li>Add a <strong>Moon</strong>, then tiny 4-point <strong>Stars</strong> with Scatter.</li>
+      </ol>
+      <p><a href="studio.html#template=ghost">Open the finished ghost →</a></p>
+
+      <h3>Christmas tree</h3>
+      <ol>
+        <li>Add a <strong>Triangle</strong> near the bottom. Add <strong>Step and repeat</strong>: 4 copies, move up about 90, resize 0.76.</li>
+        <li>Add a brown <strong>Box</strong> for the trunk and send it behind the tree.</li>
+        <li>Add a <strong>Wave</strong> line in yellow, give it the same Step settings as the tree, and set Clip inside to the tree. Instant garland.</li>
+        <li>Add ornaments: a small <strong>Circle</strong> with Step (color shift 35) and Mirror.</li>
+        <li>Top it with a <strong>Star</strong> and scatter white circles for snow.</li>
+      </ol>
+      <p><a href="studio.html#template=christmas-tree">Open the finished tree →</a></p>
+
+      <h3>Snowflake</h3>
+      <ol>
+        <li>Set a dark blue Glow background.</li>
+        <li>Add a <strong>Snowflake arm</strong> at the canvas center. Add <strong>Spin around</strong> with 6 copies.</li>
+        <li>Adjust Side branches, Branch angle and Sub-branch size. Every combination is a different crystal, just like real snow.</li>
+        <li>Add a <strong>Polygon</strong> with 6 sides in the middle. For the background, add a tiny faded arm with Spin around (This block) and then Scatter.</li>
+      </ol>
+      <p><a href="studio.html#template=snowflake">Open the finished snowflake →</a></p>
+
+      <h3>Easter egg</h3>
+      <ol>
+        <li>Add an <strong>Egg</strong> and name it “Egg”.</li>
+        <li>Add a <strong>Pattern</strong> block that is larger than the egg. Choose Zigzags, pick colors, then set <strong>Clip inside</strong> to Egg.</li>
+        <li>Add a second Pattern (Polka dots), shrink it to a band across the top, and clip it to the egg as well.</li>
+        <li>Duplicate the egg and its patterns (<kbd>Ctrl</kbd>+<kbd>D</kbd>) and move them for a basket of eggs, or try <strong>Shuffle colors</strong> for a new set.</li>
+      </ol>
+      <p><a href="studio.html#template=easter-eggs">Open the finished eggs →</a></p>
+
+      <h3>More to open and study</h3>
+      <p>The studio’s <em>Start from a picture</em> tab also has a flower, a sunny day, an autumn tree, a mandala, a pumpkin, a golden spiral, a heart pattern and a kitty. Open one and press <kbd>.</kbd> repeatedly to step through its blocks one by one.</p>
+
+      <!-- 16 -->
+      <h2 id="keyboard">16. Keyboard and accessibility</h2>
+      <p class="lead">Everything in artful drawing works with a keyboard alone, a mouse alone, or both together. No drawing tablet and no steady hand required.</p>
+      <ul>
+        <li><kbd>,</kbd> and <kbd>.</kbd> step through blocks. <kbd>Esc</kbd> selects nothing.</li>
+        <li>Arrow keys move the selected block 1 pixel; hold <kbd>Shift</kbd> for 10.</li>
+        <li><kbd>+</kbd> and <kbd>−</kbd> resize, <kbd>R</kbd> and <kbd>Shift</kbd>+<kbd>R</kbd> rotate 15°, <kbd>F</kbd> flips.</li>
+        <li><kbd>M</kbd> toggles a mirror, <kbd>[</kbd> and <kbd>]</kbd> change layer order, <kbd>H</kbd> hides, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplicates, <kbd>Delete</kbd> deletes.</li>
+        <li><kbd>B</kbd> plays the bloom animation; <kbd>Esc</kbd> stops it.</li>
+        <li><kbd>P</kbd> turns the pen on or off. Drag to draw freehand; the symmetry menu beside the pen mirrors or spins every line.</li>
+        <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> redoes, up to 150 steps. Your picture is also saved in the browser automatically.</li>
+        <li>With the mouse: drag to move, scroll to resize, <kbd>Shift</kbd>+scroll to rotate.</li>
+        <li>Every slider also has a number box, so you can type exact values.</li>
+        <li>Press <kbd>?</kbd> in the studio for the full list.</li>
+      </ul>
+      <p>The interface uses the Atkinson Hyperlegible typeface, designed by the Braille Institute for low-vision readers, keeps visible focus outlines on every control, announces actions to screen readers, and respects your system’s reduced-motion setting.</p>
+
+      <!-- 17 -->
+      <h2 id="further">17. Going further</h2>
+      <ul>
+        <li><strong>Download picture (PNG)</strong> saves a Portable Network Graphics (PNG) image at twice the canvas size, ready for printing or posting.</li>
+        <li><strong>Download vector (SVG)</strong> saves a Scalable Vector Graphics (SVG) file. It stays sharp at any size and opens in Inkscape, Adobe Illustrator, Affinity Designer and Figma, so you can keep refining by hand, cut it on a vinyl cutter, or laser-engrave it.</li>
+        <li><strong>Save project file</strong> keeps every block and repeat editable. Project files are plain JavaScript Object Notation (JSON) that you can read and even edit in a text editor.</li>
+        <li><strong>Bloom</strong> (the ▶ button, or <kbd>B</kbd>) plays your picture assembling itself, block by block and copy by copy. <strong>Download bloom animation</strong> records that as a WebM video, ready for social posts.</li>
+        <li><strong>Copy share link</strong> packs the whole picture into the web address. Anyone who opens the link sees your picture and can remix it.</li>
+      </ul>
+      <p>Ready for more? The <a href="references.html">References page</a> collects free museum collections, nature photography, pattern books, color tools and the books behind the algorithms on this page. If you write code, the project’s <code>docs/</code> folder explains how to add your own blocks and repeats.</p>
+    </main>
+  </div>
+
+  <footer class="site-foot">
+    <p>artful drawing is free and open source under the MIT License. Made for artists, tinkerers and anyone with a keyboard and a mouse.</p>
+  </footer>
+  <script type="module" src="js/learn.js"></script>
+  <script type="module" src="js/theme.js"></script>
+</body>
+</html>
