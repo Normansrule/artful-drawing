@@ -127,3 +127,24 @@ test('pen strokes draw smoothly, close into shapes, and repair bad points', () =
   const repaired = normalizeScene({ blocks: [{ type: 'stroke', points: [[1, 'x'], null] }] });
   assert.ok(repaired.blocks[0].points.length >= 2);
 });
+
+import { toColoringPage, paintBlock, isLineBlock } from '../js/coloring.js';
+
+test('every picture turns into a clean coloring page that the bucket can fill', () => {
+  for (const t of TEMPLATES) {
+    const page = toColoringPage(normalizeScene(t.build()));
+    clean(renderSceneSVG(page), `coloring ${t.id}`);
+    assert.equal(page.background.c1, '#ffffff');
+    for (const b of page.blocks) {
+      if (b.type === 'face' || isLineBlock(b)) continue;
+      assert.equal(b.fill, '#ffffff', `${t.id}/${b.name} should start white`);
+      assert.ok(b.strokeWidth >= 2, `${t.id}/${b.name} needs an outline to color inside`);
+    }
+    const target = page.blocks.find((b) => !isLineBlock(b) && b.type !== 'face');
+    assert.equal(paintBlock(target, '#ff4f87'), 'fill');
+    assert.equal(target.fill, '#ff4f87');
+  }
+  const line = makeBlock('wave');
+  assert.equal(paintBlock(line, '#123456'), 'line');
+  assert.equal(line.stroke, '#123456');
+});

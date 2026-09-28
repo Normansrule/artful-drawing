@@ -24,14 +24,20 @@ node --test
 
 say "Checking GitHub login"
 gh auth status >/dev/null 2>&1 || gh auth login --hostname github.com --git-protocol ssh --web
+ACTIVE="$(gh api user --jq .login 2>/dev/null || true)"
+if [ "${ACTIVE,,}" != "${GH_OWNER,,}" ]; then
+  echo "The GitHub CLI is using '$ACTIVE'; switching to '$GH_OWNER'."
+  gh auth switch --hostname github.com --user "$GH_OWNER" \
+    || { echo "Log in as $GH_OWNER first: gh auth login --web --git-protocol ssh"; exit 1; }
+fi
 
 # Make this folder its own repository (never the home folder).
 if [ ! -d .git ]; then
   say "Creating a new Git repository in $(pwd)"
   git init -b main
 fi
-# Point the README's badges and links at your account.
-sed -i "s/YOUR-GITHUB-NAME/$GH_OWNER/g; s#github.io/artful-drawing/#github.io/$REPO/#g; s#/artful-drawing/actions#/$REPO/actions#g" README.md
+# Point the README's badges and links at your account (whatever account they named before).
+sed -i -E "s#YOUR-GITHUB-NAME#$GH_OWNER#g; s#https://[A-Za-z0-9-]+\.github\.io/artful-drawing/#https://${GH_OWNER,,}.github.io/$REPO/#g; s#github\.com/[A-Za-z0-9-]+/artful-drawing/#github.com/$GH_OWNER/$REPO/#g" README.md
 git add -A
 git -c core.autocrlf=false commit -m "artful drawing: draw anything with blocks that bloom" >/dev/null 2>&1 || echo "(nothing new to commit)"
 

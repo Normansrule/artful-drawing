@@ -177,3 +177,24 @@
 .wc-icon { font-size: 1.8rem; line-height: 1; width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #ff4f87, #8b6bff); color: #fff; }
 @media (max-width: 620px) { .welcome-grid, .recipe-grid { grid-template-columns: 1fr; } }
 .guiding .toast { top: 84px; bottom: auto; }
+
+/* ---------- v1.4: paint bucket, quick colors, tracing photo, my drawings ---------- */
+.quick-swatches { display: inline-flex; gap: 3px; padding: 0 2px; }
+.qs { width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer; background: var(--c); border: 2px solid rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25); transition: transform 120ms; }
+.qs:hover { transform: scale(1.25); }
+.qs[aria-pressed='true'] { outline: 2px solid var(--pink); outline-offset: 2px; }
+#canvas.bucket-on, #canvas.bucket-on * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext y='26' font-size='24'%3E%F0%9F%AA%A3%3C/text%3E%3C/svg%3E") 4 28, pointer;
+}
+.trace-bar { display: inline-flex; align-items: center; gap: 0.3rem; }
+.trace-opts { display: inline-flex; align-items: center; gap: 0.2rem; }
+.trace-opts input[type='range'] { width: 80px; }
+.panel-sub { font-size: 1.05rem; margin: 1.1rem 1rem 0.2rem; }
+.kept { padding: 0 0 0.4rem; border-bottom: 1px solid var(--line); margin-bottom: 0.4rem; }
+.kept-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.9rem 1rem 0.3rem; }
+.kept-head h2 { margin: 0; font-size: 1.05rem; }
+.kept-card { position: relative; padding: 0; }
+.kept-open { all: unset; display: grid; gap: 0.2rem; cursor: pointer; padding: 6px; border-radius: inherit; width: 100%; box-sizing: border-box; }
+.kept-open:focus-visible { outline: 3px solid var(--pink); }
+.kept-open svg { width: 100%; height: auto; border-radius: 8px; }
+.kept-del { position: absolute; top: 4px; right: 4px; background: rgba(0, 0, 0, 0.45); color: #fff; border-radius: 50%; width: 26px; height: 26px; padding: 0; }

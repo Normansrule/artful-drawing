@@ -8,6 +8,7 @@ import { renderSceneInner, renderSceneSVG, sceneStats } from './render.js';
 import { playBloom, recordBloom, canRecordVideo } from './bloom.js';
 import { spotlight, reducedMotion } from './fx.js';
 import { RECIPES, getRecipe } from './recipes.js';
+import { toColoringPage, paintBlock } from './coloring.js';
 import { TEMPLATES, getTemplate } from './templates.js';
 import { PALETTES } from './color.js';
 import { encodeScene, decodeScene } from './share.js';
@@ -29,6 +30,8 @@ const state = {
   pen: { on: false, sym: 'mirror', color: '#ff4f87', size: 8 },
   penPreview: null,  // the stroke being drawn right now
   guide: null,       // draw-along session
+  bucket: false,     // paint-bucket tool
+  trace: null,       // { url, opacity } photo to trace over (never saved or exported)
   stopBloom: null,   // set while the bloom animation plays
 };
 
@@ -114,10 +117,16 @@ function draw() {
   if (state.stopBloom) stopBloom();
   canvas.setAttribute('viewBox', `0 0 ${W()} ${H()}`);
   const t0 = performance.now();
-  canvas.innerHTML = renderSceneInner(viewScene(), { prefix: 's-', reveal: state.reveal }) + ghostMarkup();
+  canvas.innerHTML = renderSceneInner(viewScene(), { prefix: 's-', reveal: state.reveal }) + ghostMarkup() + traceMarkup();
   drawOverlay();
   updateStatus();
   updateMonitor(performance.now() - t0);
+}
+
+/** A photo laid over the canvas like a lightbox, for tracing with the pen. */
+function traceMarkup() {
+  const t = state.trace;
+  return t ? `<image class="trace" href="${t.url}" x="0" y="0" width="${W()}" height="${H()}" preserveAspectRatio="xMidYMid meet" opacity="${t.opacity}" pointer-events="none"/>` : '';
 }
 
 /** The scene as shown: the real drawing plus any stroke the pen is drawing right now. */
@@ -366,7 +375,7 @@ function renderShelf() {
   }
 
   const tp = $('#panel-templates');
-  tp.replaceChildren(h('p', { class: 'note' }, 'Every picture here is made only of blocks. Open one, then click its parts to see how it works. Undo takes you back.'));
+  tp.replaceChildren(h('section', { class: 'kept', id: 'kept' }), h('h2', { class: 'panel-sub' }, 'Starter pictures'), h('p', { class: 'note' }, 'Every picture here is made only of blocks. Open one, then click its parts to see how it works. Undo takes you back.'));
   const grid = h('div', { class: 'template-grid' });
   const blank = h('button', { class: 'template-card blank', type: 'button', onclick: () => loadScene(blankScene(), 'Blank canvas. Pick a block to begin.') });
   blank.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"></svg><strong>Blank canvas</strong><span>Start from nothing.</span>`;
@@ -381,6 +390,7 @@ function renderShelf() {
     grid.append(card);
   }
   tp.append(grid);
+  renderKept();
   spotlight(document.querySelectorAll('.tile, .template-card'));
 }
 
@@ -624,6 +634,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
   if (state.stopBloom) { stopBloom(); draw(); }
   if (state.pen.on) { penStart(e); return; }
+  if (state.bucket) { bucketAt(e); return; }
   const g = e.target.closest('[data-block]');
   if (!g) { if (state.sel) select(null); return; }
   const b = blocks().find((x) => x.id === g.dataset.block);
@@ -685,6 +696,8 @@ document.addEventListener('keydown', (e) => {
   const b = selected();
   if (key === '?') { e.preventDefault(); openHelp(); return; }
   if (!mod && !typing && key.toLowerCase() === 'p') { e.preventDefault(); togglePen(); return; }
+  if (!mod && !typing && key.toLowerCase() === 'k') { e.preventDefault(); toggleBucket(); return; }
+  if (key === 'Escape' && state.bucket) { toggleBucket(false); return; }
   if (key === 'Escape' && state.pen.on) { togglePen(false); return; }
   if (key === 'Escape') { if (state.stopBloom) { stopBloom(); draw(); return; } if (state.sel) { select(null); announce('Nothing selected.'); } return; }
   if (!mod && key.toLowerCase() === 'b') { e.preventDefault(); bloom(); return; }
@@ -817,6 +830,7 @@ function wire() {
     if (!act) return;
     menu.open = false;
     if (act === 'png') exportPNG();
+    if (act === 'keep') keepDrawing();
     if (act === 'svg') exportSVG();
     if (act === 'video') exportVideo();
     if (act === 'json') saveProject();
@@ -838,9 +852,11 @@ const SYM = {
 
 function togglePen(force) {
   state.pen.on = force ?? !state.pen.on;
+  if (state.pen.on && state.bucket) toggleBucket(false, true);
   $('#btn-pen').setAttribute('aria-pressed', state.pen.on);
   canvas.classList.toggle('pen-on', state.pen.on);
   if (state.pen.on && state.sel) select(null);
+  if (force === false && !state.pen.on) return;
   announce(state.pen.on ? 'Pen on. Drag on the canvas to draw. Every line follows the symmetry you pick. Press P or Esc when done.' : 'Pen off. Click a stroke to move or recolor it.');
 }
 
@@ -922,12 +938,21 @@ function renderGuidePanel() {
     grid.append(card);
   }
   panel.append(grid);
+  panel.append(h('h2', { class: 'panel-sub' }, 'Color it in'), h('p', { class: 'panel-intro' }, 'Coloring pages: pick a color above the canvas, then click any part to fill it. Click the empty paper to color the background.'));
+  const cgrid = h('div', { class: 'recipe-grid' });
+  for (const t of TEMPLATES) {
+    const card = h('button', { class: 'recipe-card', type: 'button', onclick: () => startColoring(t.id) });
+    card.innerHTML = renderSceneSVG(toColoringPage(normalizeScene(t.build())), { prefix: `cp-${t.id}-`, title: t.name }).replace('role="img"', 'aria-hidden="true"') +
+      `<span class="rc-name">${esc(t.name)}</span><span class="rc-meta">Coloring page</span>`;
+    cgrid.append(card);
+  }
+  panel.append(cgrid);
 }
 
 function startGuide(id) {
   const r = getRecipe(id), t = getTemplate(id);
   const target = normalizeScene(t.build());
-  togglePen(false);
+  togglePen(false); toggleBucket(false, true);
   state.guide = { r, target, step: 0, done: new Set(), stepDone: false, finished: false };
   loadScene({ ...blankScene(), background: clone(target.background), blocks: [] }, `Drawing along: ${r.name}. The faint picture shows where each part goes.`);
   renderGuide();
@@ -1000,6 +1025,100 @@ function renderGuide() {
   if (g.stepDone) $('#guide-next').focus();
 }
 
+// ---------- paint bucket and coloring pages ----------
+const QUICK = ['#ff4f87', '#ff9a3c', '#ffce3a', '#58c76b', '#3ee6c1', '#4f8bff', '#8b6bff', '#8a5a2b', '#ffffff', '#221f4f'];
+
+function toggleBucket(force, quiet) {
+  state.bucket = force ?? !state.bucket;
+  if (state.bucket && state.pen.on) togglePen(false);
+  $('#btn-bucket').setAttribute('aria-pressed', state.bucket);
+  canvas.classList.toggle('bucket-on', state.bucket);
+  if (state.bucket && state.sel) select(null);
+  if (!quiet) announce(state.bucket ? 'Paint bucket on. Pick a color, then click any part to color it. Press K or Esc when done.' : 'Paint bucket off.');
+}
+
+function bucketAt(e) {
+  const g = e.target.closest('[data-block]');
+  const b = g && blocks().find((x) => x.id === g.dataset.block);
+  if (!b) {
+    state.scene.background = { ...state.scene.background, mode: 'solid', c1: state.pen.color };
+    refreshAll(); commit('Colored the background.');
+    return;
+  }
+  if (b.locked) return announce(`${b.name} is locked.`);
+  const what = paintBlock(b, state.pen.color);
+  const i = blocks().indexOf(b);
+  refreshAll(); popIn(i);
+  commit(what === 'line' ? `Colored the lines of ${b.name}.` : `Colored ${b.name}.`);
+}
+
+function startColoring(id) {
+  const t = getTemplate(id);
+  if (state.guide) exitGuide();
+  loadScene(toColoringPage(normalizeScene(t.build())), `Coloring page: ${t.name}. Pick a color, then click any part.`);
+  toggleBucket(true, true);
+}
+
+function renderSwatches() {
+  const box = $('#quick-swatches');
+  box.replaceChildren(...QUICK.map((c) => h('button', {
+    type: 'button', class: 'qs', style: `--c:${c}`, 'aria-label': `Use color ${c}`, title: c,
+    onclick: () => { state.pen.color = c; $('#pen-color').value = c; box.querySelectorAll('.qs').forEach((q) => q.setAttribute('aria-pressed', q.title === c)); },
+  })));
+}
+
+// ---------- tracing photo ----------
+function loadTrace(file) {
+  if (!file || !file.type.startsWith('image/')) return announce('That file is not a picture.');
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.trace = { url: reader.result, opacity: Number($('#trace-opacity').value) };
+    $('#trace-opts').hidden = false;
+    if (!state.pen.on) togglePen(true);
+    draw();
+    announce('Photo placed over the canvas. Draw over it with the pen; it is never saved or exported.');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ---------- my drawings (kept in this browser) ----------
+const KEEP_KEY = 'artful-drawing:gallery';
+const readKept = () => { try { return JSON.parse(localStorage.getItem(KEEP_KEY)) || []; } catch { return []; } };
+const writeKept = (list) => { try { localStorage.setItem(KEEP_KEY, JSON.stringify(list)); return true; } catch { return false; } };
+
+function keepDrawing() {
+  flushCommit();
+  const list = readKept();
+  const n = list.length + 1;
+  const name = state.guide ? state.guide.r.name : `Drawing ${n}`;
+  list.unshift({ id: uid(), name, date: new Date().toISOString(), scene: clone(state.scene) });
+  if (!writeKept(list.slice(0, 30))) return announce('Your browser storage is full. Delete a drawing from My drawings first.');
+  renderKept();
+  announce(`Saved "${name}" to My drawings (Pictures tab).`);
+}
+
+function renderKept() {
+  const box = $('#kept');
+  if (!box) return;
+  const list = readKept();
+  box.replaceChildren(
+    h('div', { class: 'kept-head' }, h('h2', {}, 'My drawings'), h('button', { class: 'btn btn-small', type: 'button', onclick: keepDrawing }, 'Save this drawing')),
+    list.length ? '' : h('p', { class: 'note' }, 'Drawings you save appear here. They stay in this browser.'),
+  );
+  const grid = h('div', { class: 'template-grid' });
+  for (const item of list) {
+    const card = h('div', { class: 'template-card kept-card' });
+    const open = h('button', { class: 'kept-open', type: 'button', 'aria-label': `Open ${item.name}`, onclick: () => loadScene(item.scene, `Opened ${item.name}. Undo brings back your previous picture.`) });
+    open.innerHTML = renderSceneSVG(normalizeScene(item.scene), { prefix: `kp-${item.id}-` }).replace('role="img"', 'aria-hidden="true"') +
+      `<strong>${esc(item.name)}</strong><span>${new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>`;
+    const del = h('button', { class: 'icon-btn kept-del', type: 'button', 'aria-label': `Delete ${item.name}`, title: 'Delete',
+      onclick: () => { if (confirm(`Delete "${item.name}" from My drawings?`)) { writeKept(readKept().filter((x) => x.id !== item.id)); renderKept(); } } }, '✕');
+    card.append(open, del);
+    grid.append(card);
+  }
+  box.append(grid);
+}
+
 // ---------- welcome and quick starts ----------
 function quickStart(kind) {
   if (kind === 'guide') { showTab('tab-guide'); announce('Pick a picture to draw along with.'); $('.recipe-card')?.focus(); }
@@ -1009,6 +1128,7 @@ function quickStart(kind) {
     state.pen.color = '#ffce3a'; $('#pen-color').value = '#ffce3a';
     togglePen(true);
   }
+  if (kind === 'color') { showTab('tab-guide'); startColoring('butterfly'); }
   if (kind === 'picture') { loadScene(getTemplate('butterfly').build(), 'Opened the butterfly. Click any part to change it.'); showTab('tab-templates'); }
   if (kind === 'blank') { loadScene(blankScene(), 'A blank canvas. Pick a shape from the shelf.'); showTab('tab-blocks'); }
 }
@@ -1019,6 +1139,16 @@ function wireCreative() {
   $('#pen-color').addEventListener('input', (e) => { state.pen.color = e.target.value; });
   $('#pen-size').addEventListener('input', (e) => { state.pen.size = Number(e.target.value); });
   $('#guide-exit').addEventListener('click', exitGuide);
+  $('#btn-bucket').addEventListener('click', () => toggleBucket());
+  renderSwatches();
+  $('#btn-trace').addEventListener('click', () => $('#trace-file').click());
+  $('#trace-file').addEventListener('change', (e) => { loadTrace(e.target.files[0]); e.target.value = ''; });
+  $('#trace-opacity').addEventListener('input', (e) => { if (state.trace) { state.trace.opacity = Number(e.target.value); draw(); } });
+  $('#trace-remove').addEventListener('click', () => { state.trace = null; $('#trace-opts').hidden = true; draw(); announce('Tracing photo removed.'); });
+  // Drop a photo anywhere on the canvas to trace it.
+  const frame = $('#canvas-frame');
+  frame.addEventListener('dragover', (e) => { if ([...e.dataTransfer.items].some((i) => i.type.startsWith('image/'))) e.preventDefault(); });
+  frame.addEventListener('drop', (e) => { const f = [...e.dataTransfer.files].find((x) => x.type.startsWith('image/')); if (f) { e.preventDefault(); loadTrace(f); } });
   const dlg = $('#welcome');
   dlg.querySelectorAll('[data-start]').forEach((b) => b.addEventListener('click', () => { dlg.close(); quickStart(b.dataset.start); }));
   dlg.addEventListener('close', () => { try { localStorage.setItem(WELCOMED_KEY, '1'); } catch { /* ignore */ } });
@@ -1030,7 +1160,7 @@ async function init() {
   if (params.get('scene')) {
     try { scene = await decodeScene(params.get('scene')); msg = 'Opened a shared picture.'; }
     catch { msg = 'That share link could not be opened. It may have been cut off when copied.'; }
-  } else if (params.get('guide') && getRecipe(params.get('guide'))) {
+  } else if ((params.get('guide') && getRecipe(params.get('guide'))) || params.get('color')) {
     scene = blankScene();
   } else if (params.get('template') && getTemplate(params.get('template'))) {
     const t = getTemplate(params.get('template'));
@@ -1055,6 +1185,7 @@ async function init() {
   refreshAll();
   if (msg) announce(msg);
   if (params.get('guide') && getRecipe(params.get('guide'))) startGuide(params.get('guide'));
+  else if (params.get('color') && getTemplate(params.get('color'))) startColoring(params.get('color'));
   else if (params.get('start')) quickStart(params.get('start'));
   else if (firstVisit && !params.get('scene') && !params.get('template')) $('#welcome').showModal();
   if (params.get('scene') || params.get('template')) { if (!reducedMotion()) bloom(1.3); }
@@ -1072,6 +1203,7 @@ window.addEventListener('hashchange', async () => {
     loadScene(t.build(), `Opened ${t.name}. Undo brings back your previous picture.`);
     if (!reducedMotion()) bloom(1.3);
   } else if (params.get('guide') && getRecipe(params.get('guide'))) startGuide(params.get('guide'));
+  else if (params.get('color') && getTemplate(params.get('color'))) startColoring(params.get('color'));
   else if (params.get('start')) quickStart(params.get('start'));
 });
 

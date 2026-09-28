@@ -7,16 +7,18 @@
 ### drawing is easier than you think.
 
 A free drawing studio that runs in your browser. Follow a guided drawing step by step,<br>
-doodle with a pen that draws in perfect symmetry, or build anything from simple shapes.<br>
+doodle with a pen that draws in perfect symmetry, color in a coloring page, trace over a photo,<br>
+or build anything from simple shapes.<br>
 **No drawing skills, no sign-up, nothing to install.** Just a keyboard and a mouse.
 
-[**✏️ Start drawing**](https://N0rmansrule.github.io/artful-drawing/studio.html) ·
-[**🦋 Draw along**](https://N0rmansrule.github.io/artful-drawing/studio.html#guide=butterfly) ·
-[**✨ Doodle with the pen**](https://N0rmansrule.github.io/artful-drawing/studio.html#start=pen) ·
-[**🏠 Website**](https://N0rmansrule.github.io/artful-drawing/) ·
-[**📖 Learn**](https://N0rmansrule.github.io/artful-drawing/learn.html)
+[**✏️ Start drawing**](https://normansrule.github.io/artful-drawing/studio.html) ·
+[**🦋 Draw along**](https://normansrule.github.io/artful-drawing/studio.html#guide=butterfly) ·
+[**✨ Doodle with the pen**](https://normansrule.github.io/artful-drawing/studio.html#start=pen) ·
+[**🪣 Color it in**](https://normansrule.github.io/artful-drawing/studio.html#color=butterfly) ·
+[**🏠 Website**](https://normansrule.github.io/artful-drawing/) ·
+[**📖 Learn**](https://normansrule.github.io/artful-drawing/learn.html)
 
-[![Tests](https://github.com/N0rmansrule/artful-drawing/actions/workflows/test.yml/badge.svg)](https://github.com/N0rmansrule/artful-drawing/actions/workflows/test.yml)
+[![Tests](https://github.com/Normansrule/artful-drawing/actions/workflows/test.yml/badge.svg)](https://github.com/Normansrule/artful-drawing/actions/workflows/test.yml)
 ![License: MIT](https://img.shields.io/badge/license-MIT-ff4f87)
 ![No build step](https://img.shields.io/badge/build%20step-none-8b6bff)
 ![Dependencies: zero](https://img.shields.io/badge/runtime%20dependencies-0-3ee6c1)
@@ -28,7 +30,7 @@ doodle with a pen that draws in perfect symmetry, or build anything from simple 
 
 ---
 
-## ✏️ Three easy ways to draw
+## ✏️ Four easy ways to draw
 
 <table>
 <tr>
@@ -60,6 +62,31 @@ Stack **29 shapes**, then add a rule: mirror, spin, step, grid, scatter or spira
 
 </td>
 </tr>
+<tr>
+<td width="33%" valign="top">
+
+### 4 · Color it in
+
+<img src="docs/media/color-in.gif" alt="A butterfly coloring page being filled in, one click per part" width="100%">
+
+Every picture is also a **coloring page**. Pick a color, click a part, done. Click the empty paper to color the background. The easiest way for little artists to make something beautiful.
+
+</td>
+<td width="67%" colspan="2" valign="top">
+
+### Little helpers that make it easier
+
+| Helper | What it does |
+|---|---|
+| **📷 Trace a photo** | Put any photo over the canvas like a lightbox, then draw over it with the pen. The photo is never saved or exported. You can also drop an image straight onto the canvas. |
+| **🪣 Paint bucket** (`K`) | Click any part to color it. Lines get a new line color; shapes get a new fill. |
+| **🎨 Quick colors** | Ten ready-made colors beside the pen, one click each. |
+| **🖼 My drawings** | Keep up to 30 drawings in your browser, with thumbnails, and reopen them any time. |
+| **👻 Tracing paper** | In Draw along, the parts you haven't drawn yet show faintly where they belong. |
+| **↩️ Undo everything** | 150 steps of undo, and your drawing saves itself as you go. |
+
+</td>
+</tr>
 </table>
 
 ## 🖼 What people draw with it
@@ -70,7 +97,7 @@ Every picture above is made **only** from simple shapes and repeat rules. Open a
 
 ## 🚀 Your first drawing in 60 seconds
 
-1. Open the [**studio**](https://N0rmansrule.github.io/artful-drawing/studio.html) and choose **Draw along → Snowflake**.
+1. Open the [**studio**](https://normansrule.github.io/artful-drawing/studio.html) and choose **Draw along → Snowflake**.
 2. Read the first step, then either follow it or press **Do this step ✨**.
 3. Press **Next →** until the snowflake is finished (three steps, about two minutes).
 4. Press **▶ Bloom it** to watch it grow, then **Save PNG**.
@@ -80,12 +107,26 @@ Nothing can break. **Undo** remembers 150 steps, and your drawing saves itself i
 
 ---
 
+## 🔗 Links that open straight into a mode
+
+Share these with anyone. They open the studio ready to go, with no menus to find.
+
+| Link ending | Opens |
+|---|---|
+| `studio.html#guide=snowflake` | Draw along: `butterfly`, `ghost`, `christmas-tree`, `snowflake`, `easter-eggs`, `flower`, `cat` |
+| `studio.html#color=pumpkin` | A coloring page of any of the 13 pictures, with the bucket ready |
+| `studio.html#start=pen` | A night canvas with the kaleidoscope pen switched on |
+| `studio.html#template=mandala` | A finished picture, blooming into place |
+
 ## 🧰 The toolbox
 
 <img src="docs/screenshots/studio.png" alt="The studio in the Night theme: a shelf of shape tiles, a snowflake on the canvas, and the settings panel" width="100%">
 
 | Tool | What it does |
 |---|---|
+| **Paint bucket** (`K`) | Click any part to fill it with the current color; click the paper to color the background |
+| **Coloring pages** | Any of the 13 pictures as white shapes with clean outlines, ready to fill |
+| **Trace a photo** | A see-through photo over the canvas to draw on top of, kept out of every export |
 | **Pen** (`P`) | Freehand drawing, smoothed automatically. Symmetry: none, mirror, spin × 4 or × 6, or kaleidoscope × 6, × 8 or × 12. Loops fill with color. |
 | **Shapes** | Circle, box, triangle, polygon, star, heart, petal, drop, egg, moon, ring, wing, ghost, blob, cloud |
 | **Lines** | Straight, curve, arc, wave, zigzag, spiral, and your own pen strokes |
@@ -130,6 +171,7 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | Key | Action | Key | Action |
 |---|---|---|---|
 | `P` | Pen on or off | `B` | Play the bloom |
+| `K` | Paint bucket on or off | `Esc` | Turn off the pen or bucket |
 | Arrow keys | Move 1 pixel (with `Shift`, 10) | `,` / `.` | Previous or next shape |
 | `+` / `-` | Grow or shrink | `Esc` | Deselect, stop the pen or bloom |
 | `R` / `Shift+R` | Rotate 15° | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo or redo |
@@ -147,7 +189,7 @@ With a mouse: drag to move, scroll to resize, and hold `Shift` while scrolling t
 | Page | What's there |
 |---|---|
 | **Home** (`index.html`) | Live swirling ink, pictures that draw themselves, a scroll-built butterfly, a **symmetry painter** you can play with, a 3D picture carousel, and keycaps you can press |
-| **Studio** (`studio.html`) | The drawing app. Night theme by default, with a ☀ switch to the light paper theme |
+| **Studio** (`studio.html`) | The drawing app: pen, paint bucket, draw along, coloring pages, tracing and My drawings. Night theme by default, with a ☀ switch to the light paper theme |
 | **Learn** (`learn.html`) | 17 friendly lessons on symmetry, the golden angle, fractals, color, composition and why cute things look cute, with 50 live examples and 4 slider playgrounds |
 | **References** (`references.html`) | Free museum collections, nature photography, pattern books, color tools, drawing courses and the projects that inspired this one |
 
@@ -200,6 +242,18 @@ GH_OWNER=your-github-name bash scripts/publish.sh
 
 After that, every update is `git add -A && git commit -m "…" && git push`.
 
+**Updating from a new release zip** (keeps your Git history):
+
+```bash
+ZIP=$(ls -t ~/Downloads/artful-drawing*.zip | head -1)   # on WSL: /mnt/c/Users/<you>/Downloads
+rm -rf /tmp/ad-new && mkdir /tmp/ad-new && unzip -q "$ZIP" -d /tmp/ad-new \
+  && cp -a /tmp/ad-new/artful-drawing/. ~/projects/artful-drawing/ \
+  && cd ~/projects/artful-drawing && npm test \
+  && git add -A && git commit -m "Update artful drawing" && git push
+```
+
+If `python3 -m http.server 8000` says *Address already in use*, a preview is already running: open http://localhost:8000, use another port (`python3 -m http.server 8001`), or stop the old one with `fuser -k 8000/tcp`.
+
 <details>
 <summary><b>Prefer clicking? Turn on GitHub Pages by hand</b></summary>
 
@@ -246,10 +300,11 @@ js/
   shapes.js      every shape: settings + geometry (including the pen stroke)
   repeaters.js   the six repeat rules and how they stack
   recipes.js     the seven draw-along guides
+  coloring.js    coloring pages and the paint bucket
   model.js       the drawing format and repair of broken files
   render.js      drawing → SVG (pure functions, also used by the tests)
   bloom.js       the bloom timeline and video export
-  studio.js      the studio: shelf, pen, draw along, inspector, layers, keyboard
+  studio.js      the studio: shelf, pen, bucket, draw along, tracing, my drawings, inspector, layers, keyboard
   home.js  toys.js  fluid.js  fx.js  theme.js  learn.js  templates.js
   share.js  color.js  util.js
 vendor/gsap/     GreenSock Animation Platform (GSAP), home page only
@@ -266,12 +321,13 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-12 tests cover the following, and GitHub Actions runs them on every push:
+13 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
 - all 13 pictures and every Learn page example
 - every draw-along guide (each step must add real shapes, and every shape must be covered exactly once)
+- every coloring page (it must start white with outlines, and the bucket must fill it)
 - pen strokes
 - repair of broken project files
 - share links that round-trip exactly
@@ -304,6 +360,6 @@ artful drawing is released under the [MIT License](LICENSE).
 
 <div align="center">
 
-**[✏️ Start drawing →](https://N0rmansrule.github.io/artful-drawing/studio.html)**
+**[✏️ Start drawing →](https://normansrule.github.io/artful-drawing/studio.html)**
 
 </div>
