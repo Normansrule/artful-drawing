@@ -148,3 +148,63 @@ test('every picture turns into a clean coloring page that the bucket can fill', 
   assert.equal(paintBlock(line, '#123456'), 'line');
   assert.equal(line.stroke, '#123456');
 });
+
+import { recognizeShape, makeStabilizer, resample } from '../js/assist.js';
+import { BRUSHES } from '../js/shapes.js';
+
+// Wobbly, hand-drawn test shapes from a seeded random number generator.
+const wobbly = (seed) => { let s = seed; return () => ((s = (s * 16807) % 2147483647) / 2147483647 - 0.5); };
+const jitter = (pts, amount, seed = 7) => { const r = wobbly(seed); return pts.map((p) => ({ x: p.x + r() * amount, y: p.y + r() * amount })); };
+const oval = (a, b, rotDeg, over = 1.05) => Array.from({ length: 60 }, (_, i) => {
+  const t = (i / 60) * Math.PI * 2 * over, r = (rotDeg * Math.PI) / 180, x = a * Math.cos(t), y = b * Math.sin(t);
+  return { x: 400 + x * Math.cos(r) - y * Math.sin(r), y: 400 + x * Math.sin(r) + y * Math.cos(r) };
+});
+const polygonPts = (n, R, rotDeg = 0) => {
+  const out = [];
+  for (let k = 0; k < n; k++) {
+    const a1 = ((rotDeg + (k * 360) / n - 90) * Math.PI) / 180, a2 = ((rotDeg + ((k + 1) * 360) / n - 90) * Math.PI) / 180;
+    for (let i = 0; i < 14; i++) { const t = i / 14; out.push({ x: 400 + R * ((1 - t) * Math.cos(a1) + t * Math.cos(a2)), y: 400 + R * ((1 - t) * Math.sin(a1) + t * Math.sin(a2)) }); }
+  }
+  out.push(out[0]);
+  return out;
+};
+
+test('rough shapes snap into the clean shape they were aiming for', () => {
+  assert.equal(recognizeShape(jitter(oval(120, 120, 0), 8)).kind, 'circle');
+  const e = recognizeShape(jitter(oval(180, 90, 30), 8));
+  assert.equal(e.kind, 'ellipse');
+  assert.ok(Math.abs(e.rot - 30) < 4 && e.w > e.h * 1.5);
+  const box = recognizeShape(jitter(polygonPts(4, 150, 45), 6));
+  assert.equal(box.kind, 'rect');
+  assert.equal(recognizeShape(jitter(polygonPts(3, 150), 6)).kind, 'triangle');
+  const hex = recognizeShape(jitter(polygonPts(6, 150), 5));
+  assert.equal(hex.kind, 'polygon');
+  assert.equal(hex.sides, 6);
+  assert.equal(recognizeShape(jitter(Array.from({ length: 40 }, (_, i) => ({ x: 100 + i * 10, y: 200 + i * 4 })), 5)).kind, 'line');
+});
+
+test('curves, hearts and scribbles are never forced into a shape', () => {
+  const arc = Array.from({ length: 40 }, (_, i) => ({ x: 400 + 150 * Math.cos((i / 40) * 3), y: 400 + 150 * Math.sin((i / 40) * 3) }));
+  assert.equal(recognizeShape(arc), null);
+  const scribble = Array.from({ length: 80 }, (_, i) => ({ x: 400 + 150 * Math.sin(i * 1.7) * Math.cos(i * 0.31), y: 400 + 120 * Math.sin(i * 0.9 + 1) }));
+  assert.equal(recognizeShape(scribble), null);
+  const heart = Array.from({ length: 30 }, (_, i) => { const t = (i / 30) * Math.PI * 2; return { x: 400 + 160 * Math.sin(t) ** 3, y: 400 - (130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t)) }; });
+  assert.equal(recognizeShape(heart), null);
+  assert.equal(recognizeShape([{ x: 0, y: 0 }, { x: 1, y: 1 }]), null);
+});
+
+test('the steady-hand stabilizer ignores small wobbles', () => {
+  const st = makeStabilizer(20);
+  assert.ok(st.push({ x: 0, y: 0 }));
+  assert.equal(st.push({ x: 8, y: 5 }), null, 'a small wobble should not move the ink');
+  const moved = st.push({ x: 50, y: 0 });
+  assert.ok(moved && Math.abs(moved.x - 30) < 0.01, 'the ink trails the pointer by the string length');
+  assert.equal(resample([{ x: 0, y: 0 }, { x: 10, y: 0 }], 11).length, 11);
+});
+
+test('every brush draws a clean pen stroke', () => {
+  for (const br of BRUSHES) {
+    const b = makeBlock('stroke', { brush: br.id, points: [[-0.5, 0, 0.5], [-0.2, -0.4, 1], [0.2, 0.3, 1.2], [0.5, 0, 0.6]], repeats: [makeRepeat('mirror')] });
+    clean(renderSceneSVG(scene([b])), `brush ${br.id}`);
+  }
+});

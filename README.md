@@ -30,6 +30,32 @@ or build anything from simple shapes.<br>
 
 ---
 
+## 🖌 You draw. It helps.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/media/snap.gif" alt="A rough sun, house, roof and door drawn by hand, each snapping into a clean circle, rectangle and triangle" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**Draw it rough, it comes out neat.** Like the helpers in professional painting apps, the tools stay out of the way until they are useful:
+
+- **Snap shapes:** hold still at the end of a stroke and a rough circle, oval, box, triangle, polygon or straight line becomes a clean one. Keep moving and it doesn't. Undo gives you back your own line.
+- **Steady hand:** a lazy-string smoother ignores small wobbles as you draw.
+- **Six brushes:** brush (thick and thin), ink, marker, pencil, neon and dots. Drawing tablets use real pen pressure; with a mouse, speed sets the thickness.
+- **Symmetry:** mirror or spin every line you draw, up to 12 ways.
+- **Eraser, bucket, layers, 150 undos.** Everything you draw stays editable.
+
+</td>
+</tr>
+<tr>
+<td colspan="2"><img src="docs/screenshots/brushes.png" alt="Six brush styles side by side: tapered brush, even ink, see-through marker, sketchy pencil, glowing neon and dots" width="100%"></td>
+</tr>
+</table>
+
 ## ✏️ Four easy ways to draw
 
 <table>
@@ -124,6 +150,11 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 
 | Tool | What it does |
 |---|---|
+| **Tool bar** | Select (`V`), Pen (`P`), Eraser (`E`) and Fill (`K`) down the left of the canvas, with each tool's options in a bar on top, like a professional paint program |
+| **Snap shapes** | Hold still at the end of a stroke: rough circles, ovals, rectangles, triangles, polygons and lines become clean, editable shapes |
+| **Brushes** | Brush (tapered, pressure-sensitive), ink, marker, pencil, neon and dots |
+| **Steady hand** | Smooths out wobbles while you draw; 0 is off, 1 is very smooth |
+| **Eraser** (`E`) | Rub over what you drew to remove it (or switch it to erase anything) |
 | **Paint bucket** (`K`) | Click any part to fill it with the current color; click the paper to color the background |
 | **Coloring pages** | Any of the 13 pictures as white shapes with clean outlines, ready to fill |
 | **Trace a photo** | A see-through photo over the canvas to draw on top of, kept out of every export |
@@ -171,7 +202,8 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | Key | Action | Key | Action |
 |---|---|---|---|
 | `P` | Pen on or off | `B` | Play the bloom |
-| `K` | Paint bucket on or off | `Esc` | Turn off the pen or bucket |
+| `K` | Paint bucket | `E` | Eraser |
+| `V` | Select tool | `Esc` | Back to the Select tool |
 | Arrow keys | Move 1 pixel (with `Shift`, 10) | `,` / `.` | Previous or next shape |
 | `+` / `-` | Grow or shrink | `Esc` | Deselect, stop the pen or bloom |
 | `R` / `Shift+R` | Rotate 15° | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo or redo |
@@ -282,6 +314,7 @@ flowchart LR
 ```
 
 - **No build step, no framework, no runtime dependencies.** The files you see are the files the browser runs.
+- **Shape snapping** fits an ellipse through the stroke using principal component analysis (PCA), finds corners with Ramer-Douglas-Peucker simplification, and keeps whichever fits better. Scribbles and curves fit neither, so they are left alone.
 - **Pen strokes** are smoothed with Catmull-Rom splines, and extra points are dropped with the Ramer-Douglas-Peucker algorithm. Each stroke is stored as normalized points, so it stays editable and resizable like any other shape.
 - **Randomness is seeded:** the same seed always gives the same sprinkle, so a share link reproduces a drawing exactly.
 - **Bloom** treats animation as a pure function of time, so the preview, the video and the home page all show the same motion.
@@ -301,6 +334,7 @@ js/
   repeaters.js   the six repeat rules and how they stack
   recipes.js     the seven draw-along guides
   coloring.js    coloring pages and the paint bucket
+  assist.js      drawing helpers: steady hand, pressure, shape snapping
   model.js       the drawing format and repair of broken files
   render.js      drawing → SVG (pure functions, also used by the tests)
   bloom.js       the bloom timeline and video export
@@ -321,14 +355,16 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-13 tests cover the following, and GitHub Actions runs them on every push:
+17 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
 - all 13 pictures and every Learn page example
 - every draw-along guide (each step must add real shapes, and every shape must be covered exactly once)
 - every coloring page (it must start white with outlines, and the bucket must fill it)
-- pen strokes
+- pen strokes and all six brushes
+- shape snapping (rough circles, ovals, boxes, triangles, polygons and lines snap; curves, hearts and scribbles never do)
+- the steady-hand stabilizer
 - repair of broken project files
 - share links that round-trip exactly
 - the bloom timeline

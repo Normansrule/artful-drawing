@@ -16,6 +16,15 @@
 
 import { r2, rng } from './util.js';
 
+export const BRUSHES = [
+  { id: 'ink', label: 'Ink (even line)' },
+  { id: 'brush', label: 'Brush (thick and thin)' },
+  { id: 'marker', label: 'Marker (see-through)' },
+  { id: 'pencil', label: 'Pencil (sketchy)' },
+  { id: 'neon', label: 'Neon (glowing)' },
+  { id: 'dots', label: 'Dots' },
+];
+
 // ---------- path helpers ----------
 
 /** Scale a list of unit-space commands ([op, x, y, ...]) by sx, sy. */
@@ -568,16 +577,59 @@ export const SHAPES = {
   // ===== Pen =====
   stroke: {
     label: 'Pen stroke', category: 'Lines',
-    blurb: 'A line you drew by hand with the Pen, smoothed out. Close it to fill it with color.',
+    blurb: 'A line you drew by hand with the Pen, smoothed out. Pick a brush, or close it to fill it with color.',
     defaults: {
-      w: 220, h: 160, fill: '#ff5c8a', stroke: '#221f4f', strokeWidth: 8, closed: false, smooth: 0.6,
+      w: 220, h: 160, fill: '#ff5c8a', stroke: '#221f4f', strokeWidth: 8, closed: false, smooth: 0.6, brush: 'ink', seed: 1,
       points: [[-0.5, 0.3], [-0.25, -0.35], [0, 0.2], [0.25, -0.4], [0.5, 0.25]],
     },
-    params: [toggle('closed', 'Close and fill'), range('smooth', 'Smoothing', 0, 1, 0.05)],
+    params: [
+      select('brush', 'Brush', BRUSHES.map((b) => [b.id, b.label])),
+      toggle('closed', 'Close and fill'),
+      range('smooth', 'Smoothing', 0, 1, 0.05),
+    ],
     parts: (p) => {
-      const pts = (Array.isArray(p.points) ? p.points : []).map(([x, y]) => [x * p.w, y * p.h]);
+      const pts = (Array.isArray(p.points) ? p.points : []).map(([x, y, pr]) => [x * p.w, y * p.h, Number.isFinite(pr) ? pr : 1]);
       if (pts.length < 2) return [];
-      return [{ d: smoothPath(pts, p.smooth, p.closed), kind: p.closed ? 'fill' : 'line' }];
+      const d = smoothPath(pts, p.smooth, p.closed);
+      if (p.closed) return [{ d, kind: 'fill' }];
+      const sw = p.strokeWidth || 1;
+      switch (p.brush) {
+        case 'brush': return [{ d: taperOutline(sampleSpline(pts, p.smooth, false), sw), kind: 'fill', color: p.stroke, noStroke: true }];
+        case 'marker': return [{ d, kind: 'line', sw: 1.7, opacity: 0.6 }];
+        case 'neon': return [
+          { d, kind: 'line', sw: 3.4, opacity: 0.16 },
+          { d, kind: 'line', sw: 1.8, opacity: 0.4 },
+          { d, kind: 'line', sw: 0.45, color: '#ffffff', opacity: 0.95 },
+        ];
+        case 'pencil': {
+          const r = rng(p.seed || 1);
+          const wob = (q) => q.map(([x, y, pr]) => [x + (r() - 0.5) * sw * 0.5, y + (r() - 0.5) * sw * 0.5, pr]);
+          return [
+            { d, kind: 'line', sw: 0.45, opacity: 0.85 },
+            { d: smoothPath(wob(pts), p.smooth, false), kind: 'line', sw: 0.3, opacity: 0.45 },
+            { d: smoothPath(wob(pts), p.smooth, false), kind: 'line', sw: 0.25, opacity: 0.3 },
+          ];
+        }
+        case 'dots': {
+          const line = sampleSpline(pts, p.smooth, false);
+          const gap = Math.max(4, sw * 1.9);
+          let need = 0, out = '';
+          for (let i = 1; i < line.length; i++) {
+            const [x0, y0, q0] = line[i - 1], [x1, y1] = line[i];
+            const seg = Math.hypot(x1 - x0, y1 - y0);
+            let pos = need;
+            while (pos <= seg) {
+              const t = seg ? pos / seg : 0, rr = (sw / 2) * (q0 ?? 1);
+              const cx = x0 + (x1 - x0) * t, cy = y0 + (y1 - y0) * t;
+              out += `M${r2(cx + rr)} ${r2(cy)}a${r2(rr)} ${r2(rr)} 0 1 0 ${r2(-2 * rr)} 0a${r2(rr)} ${r2(rr)} 0 1 0 ${r2(2 * rr)} 0Z`;
+              pos += gap;
+            }
+            need = pos - seg;
+          }
+          return out ? [{ d: out, kind: 'fill', color: p.stroke, noStroke: true }] : [];
+        }
+        default: return [{ d, kind: 'line' }];
+      }
     },
   },
 
@@ -616,6 +668,48 @@ export const SHAPES = {
     },
   },
 };
+
+/** Samples along the same Catmull-Rom curve smoothPath draws, keeping per-point pressure. */
+export function sampleSpline(pts, tension = 0.6, closed = false, per = 8) {
+  const n = pts.length, k = tension / 6;
+  const at = (i) => (closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))]);
+  const out = [[pts[0][0], pts[0][1], pts[0][2] ?? 1]];
+  const last = closed ? n : n - 1;
+  for (let i = 0; i < last; i++) {
+    const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
+    const c1 = [p1[0] + (p2[0] - p0[0]) * k, p1[1] + (p2[1] - p0[1]) * k];
+    const c2 = [p2[0] - (p3[0] - p1[0]) * k, p2[1] - (p3[1] - p1[1]) * k];
+    for (let s = 1; s <= per; s++) {
+      const t = s / per, u = 1 - t;
+      const x = u * u * u * p1[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * p2[0];
+      const y = u * u * u * p1[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * p2[1];
+      out.push([x, y, (p1[2] ?? 1) * u + (p2[2] ?? 1) * t]);
+    }
+  }
+  return out;
+}
+
+/** A filled outline around a centerline: thick in the middle, tapered at both ends, wider where pressure is high. */
+export function taperOutline(line, size) {
+  const n = line.length;
+  if (n < 2) return '';
+  let total = 0;
+  const along = [0];
+  for (let i = 1; i < n; i++) { total += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]); along.push(total); }
+  const left = [], right = [];
+  for (let i = 0; i < n; i++) {
+    const a = line[Math.max(0, i - 1)], b = line[Math.min(n - 1, i + 1)];
+    let nx = -(b[1] - a[1]), ny = b[0] - a[0];
+    const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+    const t = total ? along[i] / total : 0;
+    const taper = Math.min(1, t / 0.18, (1 - t) / 0.25) ** 0.65;
+    const half = (size / 2) * Math.max(0.08, taper) * (line[i][2] ?? 1);
+    left.push([line[i][0] + nx * half, line[i][1] + ny * half]);
+    right.push([line[i][0] - nx * half, line[i][1] - ny * half]);
+  }
+  const f = ([x, y]) => `${r2(x)} ${r2(y)}`;
+  return `M${f(left[0])}L${left.slice(1).map(f).join('L')}L${right.reverse().map(f).join('L')}Z`;
+}
 
 /** Catmull-Rom spline through points, written as cubic Bezier curves. tension 0 = straight lines. */
 export function smoothPath(pts, tension = 0.6, closed = false) {

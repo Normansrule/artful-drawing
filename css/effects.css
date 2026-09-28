@@ -198,3 +198,39 @@
 .kept-open:focus-visible { outline: 3px solid var(--pink); }
 .kept-open svg { width: 100%; height: auto; border-radius: 8px; }
 .kept-del { position: absolute; top: 4px; right: 4px; background: rgba(0, 0, 0, 0.45); color: #fff; border-radius: 50%; width: 26px; height: 26px; padding: 0; }
+
+/* ---------- v1.5: tool rail, options bar, assists ---------- */
+.stage { position: relative; }
+.tool-rail {
+  position: absolute; left: 6px; top: 50%; transform: translateY(-50%); z-index: 6; display: grid; gap: 6px; padding: 6px; border-radius: 18px;
+  background: var(--panel-solid, #fff); border: 1.5px solid var(--line); box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.55);
+}
+.tool-rail button {
+  position: relative; width: 58px; padding: 7px 0 5px; border-radius: 12px; border: 1.5px solid transparent; background: transparent; color: var(--ink);
+  display: grid; justify-items: center; gap: 2px; cursor: pointer; font: 700 0.66rem/1 var(--body); transition: background 140ms, transform 140ms;
+}
+.tool-rail button svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+.tool-rail button kbd { position: absolute; top: 3px; right: 4px; font-size: 0.55rem; padding: 0 3px; opacity: 0.6; border: 0; background: transparent; }
+.tool-rail button:hover { background: var(--tint); transform: translateY(-1px); }
+.tool-rail button[aria-pressed='true'] { background: linear-gradient(135deg, #ff4f87, #8b6bff); color: #fff; box-shadow: 0 8px 20px -8px rgba(255, 79, 135, 0.9); }
+.tool-rail button[aria-pressed='true'] kbd { color: #fff; }
+.options-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding: 0.25rem 0.45rem; border-radius: 14px; border: 1.5px solid var(--line); background: var(--tint); min-height: 40px; }
+.options-bar .opt { display: none; align-items: center; gap: 0.35rem; font-size: 0.82rem; }
+.options-bar[data-tool='select'] .opt[data-for~='select'], .options-bar[data-tool='pen'] .opt[data-for~='pen'],
+.options-bar[data-tool='eraser'] .opt[data-for~='eraser'], .options-bar[data-tool='fill'] .opt[data-for~='fill'] { display: inline-flex; }
+.tool-name { font: 800 0.95rem/1 var(--display); padding: 0 0.35rem 0 0.2rem; border-right: 1.5px solid var(--line); margin-right: 0.1rem; }
+.opt-label { font-weight: 700; color: var(--ink-2); }
+.opt-hint { color: var(--ink-2); }
+.opt select { width: auto; padding: 0.3rem 0.45rem; border-radius: 999px; font-size: 0.82rem; }
+.opt input[type='range'] { width: 84px; }
+.opt input[type='color'] { width: 2rem; height: 1.8rem; border-radius: 50%; padding: 1px; }
+.opt-check { cursor: pointer; font-weight: 700; }
+.canvas-frame { padding-left: 84px; }
+#canvas.eraser-on { cursor: cell; }
+#canvas.snapped { animation: snap-pulse 420ms ease; }
+@keyframes snap-pulse { 30% { filter: drop-shadow(0 0 18px rgba(255, 206, 58, 0.95)); } }
+@media (max-width: 760px) {
+  .tool-rail { position: static; transform: none; display: flex; margin: 0 auto 0.5rem; width: max-content; }
+  .canvas-frame { padding-left: 0; }
+}
+.trace-opts[hidden] { display: none; }
