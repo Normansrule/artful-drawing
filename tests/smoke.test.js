@@ -208,3 +208,35 @@ test('every brush draws a clean pen stroke', () => {
     clean(renderSceneSVG(scene([b])), `brush ${br.id}`);
   }
 });
+
+import { EFFECTS } from '../js/model.js';
+
+test('every layer effect renders on shapes, lines and pen strokes', () => {
+  for (const [effect] of EFFECTS) {
+    for (const type of ['heart', 'wave', 'stroke', 'tree']) {
+      const svg = renderSceneSVG(scene([makeBlock(type, { effect, repeats: [makeRepeat('mirror')] })]));
+      clean(svg, `${type} + ${effect}`);
+      if (effect !== 'none') assert.match(svg, /<filter id=/, `${effect} should add a filter`);
+    }
+  }
+  assert.equal(normalizeScene({ blocks: [{ type: 'circle', effect: 'explode' }] }).blocks[0].effect, 'none');
+});
+
+test('rough stars snap into stars, but boxes stay boxes', () => {
+  const starPts = (n, R, ri) => {
+    const out = [];
+    for (let k = 0; k < n * 2; k++) {
+      const a1 = (k * Math.PI) / n - Math.PI / 2, a2 = ((k + 1) * Math.PI) / n - Math.PI / 2;
+      const r1 = k % 2 ? ri : R, r2 = k % 2 ? R : ri;
+      for (let i = 0; i < 6; i++) { const t = i / 6; out.push({ x: 400 + r1 * Math.cos(a1) * (1 - t) + r2 * Math.cos(a2) * t, y: 400 + r1 * Math.sin(a1) * (1 - t) + r2 * Math.sin(a2) * t }); }
+    }
+    out.push(out[0]);
+    return out;
+  };
+  const five = recognizeShape(jitter(starPts(5, 160, 65), 6));
+  assert.equal(five.kind, 'star');
+  assert.equal(five.points, 5);
+  assert.equal(recognizeShape(jitter(starPts(6, 160, 80), 6)).points, 6);
+  assert.equal(recognizeShape(jitter(polygonPts(4, 150, 45), 6)).kind, 'rect');
+  assert.equal(recognizeShape(jitter(polygonPts(5, 150), 5)).kind, 'polygon');
+});

@@ -3,7 +3,7 @@
 
 import { SHAPES, CATEGORIES } from './shapes.js';
 import { REPEATERS } from './repeaters.js';
-import { makeBlock, makeRepeat, blankScene, normalizeScene } from './model.js';
+import { makeBlock, makeRepeat, blankScene, normalizeScene, EFFECTS } from './model.js';
 import { renderSceneInner, renderSceneSVG, sceneStats } from './render.js';
 import { playBloom, recordBloom, canRecordVideo } from './bloom.js';
 import { spotlight, reducedMotion } from './fx.js';
@@ -28,7 +28,11 @@ const state = {
   palette: 'Candy',
   openSections: new Set(['place', 'shape', 'color', 'repeat']),
   reveal: null,      // set while a block is popping in
-  tool: 'select',   // select | pen | eraser | fill
+  tool: 'select',   // select | pen | eraser | fill | picker
+  prevTool: 'select',
+  view: { x: 0, y: 0, z: 1 }, // zoom and pan (the drawing itself never changes)
+  recent: [],        // recently used colors
+  spaceDown: false,
   pen: { on: false, sym: 'mirror', color: '#ff4f87', size: 8, brush: 'brush', steady: 0.35, snap: true, fillLoops: true },
   eraser: { on: false, scope: 'mine' },
   penPreview: null,  // the stroke being drawn right now
@@ -118,7 +122,8 @@ function updateHistoryButtons() {
 // ---------- drawing ----------
 function draw() {
   if (state.stopBloom) stopBloom();
-  canvas.setAttribute('viewBox', `0 0 ${W()} ${H()}`);
+  const v = state.view;
+  canvas.setAttribute('viewBox', `${r1(v.x)} ${r1(v.y)} ${r1(W() / v.z)} ${r1(H() / v.z)}`);
   const t0 = performance.now();
   canvas.innerHTML = renderSceneInner(viewScene(), { prefix: 's-', reveal: state.reveal }) + ghostMarkup() + traceMarkup();
   drawOverlay();
@@ -212,6 +217,18 @@ async function exportVideo() {
   }
 }
 
+/** While the pen is out, show the lines every stroke will be mirrored or spun around. */
+function symmetryGuides(w, hh, ns) {
+  const cx = w / 2, cy = hh / 2, R = Math.hypot(w, hh);
+  const sym = state.pen.sym, n = Number(sym.replace(/\D/g, '')) || 1;
+  let lines = [];
+  if (sym === 'mirror') lines = [[cx, 0, cx, hh]];
+  else if (sym.startsWith('spin')) lines = Array.from({ length: n }, (_, k) => { const a = (k * 2 * Math.PI) / n - Math.PI / 2; return [cx, cy, cx + Math.cos(a) * R, cy + Math.sin(a) * R]; });
+  else lines = Array.from({ length: n }, (_, k) => { const a = (k * Math.PI) / n - Math.PI / 2; return [cx - Math.cos(a) * R, cy - Math.sin(a) * R, cx + Math.cos(a) * R, cy + Math.sin(a) * R]; });
+  return `<g stroke="#8b6bff" stroke-opacity="0.55" stroke-width="1.5" stroke-dasharray="3 7" ${ns}>` +
+    lines.map(([x1, y1, x2, y2]) => `<line x1="${r1(x1)}" y1="${r1(y1)}" x2="${r1(x2)}" y2="${r1(y2)}" ${ns}/>`).join('') + '</g>';
+}
+
 function drawOverlay() {
   const w = W(), hh = H(), ns = 'vector-effect="non-scaling-stroke"';
   let o = '<g id="overlay" pointer-events="none">';
@@ -220,6 +237,7 @@ function drawOverlay() {
       [1, 2].map((i) => `<line x1="${(w * i) / 3}" y1="0" x2="${(w * i) / 3}" y2="${hh}" ${ns}/><line x1="0" y1="${(hh * i) / 3}" x2="${w}" y2="${(hh * i) / 3}" ${ns}/>`).join('') +
       `</g><g stroke="#ff4f87" stroke-opacity="0.45" stroke-dasharray="6 6" ${ns}><line x1="${w / 2}" y1="0" x2="${w / 2}" y2="${hh}" ${ns}/><line x1="0" y1="${hh / 2}" x2="${w}" y2="${hh / 2}" ${ns}/></g>`;
   }
+  if (state.tool === 'pen' && state.pen.sym !== 'none') o += symmetryGuides(w, hh, ns);
   const b = selected();
   if (b && b.visible) {
     const g = canvas.querySelector(`[data-block="${CSS.escape(b.id)}"]`);
@@ -539,6 +557,7 @@ function renderInspector() {
       control(b, { key: 'stroke', label: def.category === 'Lines' ? 'Line color' : 'Outline color', type: 'color' }),
       control(b, { key: 'strokeWidth', label: def.category === 'Lines' ? 'Line thickness' : 'Outline width', type: 'range', min: 0, max: 60, step: 0.5 })),
     control(b, { key: 'opacity', label: 'Opacity', type: 'range', min: 0, max: 1, step: 0.01 }),
+    control(b, { key: 'effect', label: 'Effect', type: 'select', options: EFFECTS }),
   );
   root.append(section('color', 'Color', colorBody));
 
@@ -636,6 +655,8 @@ function toSvgPoint(e) {
 canvas.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
   if (state.stopBloom) { stopBloom(); draw(); }
+  if (e.button === 1 || state.spaceDown) { panStart(e); return; }
+  if (state.tool === 'picker' || (e.altKey && (state.tool === 'pen' || state.tool === 'fill'))) { pickAt(e); return; }
   if (state.pen.on) { penStart(e); return; }
   if (state.bucket) { bucketAt(e); return; }
   if (state.eraser.on) { eraseStart(e); return; }
@@ -652,6 +673,8 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointermove', (e) => {
+  moveBrushCursor(e);
+  if (panning) { panMove(e); return; }
   if (penPts) { penMove(e); return; }
   if (erasing) { eraseAt(e); return; }
   if (!drag) return;
@@ -662,6 +685,7 @@ canvas.addEventListener('pointermove', (e) => {
 });
 
 function endDrag() {
+  if (panning) { panning = null; canvas.classList.remove('is-panning'); return; }
   if (penPts) { penEnd(); return; }
   if (erasing) { eraseEnd(); return; }
   if (!drag) return;
@@ -674,7 +698,19 @@ canvas.addEventListener('pointerup', endDrag);
 canvas.addEventListener('pointercancel', endDrag);
 
 canvas.addEventListener('wheel', (e) => {
+  if (e.ctrlKey || e.metaKey) { // pinch or Ctrl+scroll: zoom around the pointer
+    e.preventDefault();
+    const p = toSvgPoint(e);
+    setZoom(state.view.z * Math.exp(-e.deltaY * 0.0025), p.x, p.y);
+    return;
+  }
   const b = selected();
+  if (state.view.z > 1 && (!b || state.tool !== 'select')) { // zoomed in: scroll to look around
+    e.preventDefault();
+    const k = (W() / state.view.z) / canvas.getBoundingClientRect().width;
+    panBy(e.deltaX * k, e.deltaY * k);
+    return;
+  }
   if (!b || b.locked) return;
   e.preventDefault();
   const d = e.deltaY || e.deltaX;
@@ -695,6 +731,9 @@ document.addEventListener('keydown', (e) => {
   if (mod && key.toLowerCase() === 'z' && !typing) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
   if (mod && key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
   if (mod && key.toLowerCase() === 's') { e.preventDefault(); saveProject(); return; }
+  if (mod && (key === '=' || key === '+')) { e.preventDefault(); zoomStep(1.25); return; }
+  if (mod && (key === '-' || key === '_')) { e.preventDefault(); zoomStep(0.8); return; }
+  if (mod && key === '0') { e.preventDefault(); setZoom(1); return; }
   if (typing) { if (key === 'Escape') t.blur(); return; }
   if (t.type === 'range' && key.startsWith('Arrow')) return; // let sliders use arrows
   if (key.startsWith('Arrow') && t.closest && t.closest('[role="tablist"]')) return; // tabs use arrows too
@@ -704,6 +743,7 @@ document.addEventListener('keydown', (e) => {
   if (!mod && !typing && key.toLowerCase() === 'p') { e.preventDefault(); togglePen(); return; }
   if (!mod && !typing && key.toLowerCase() === 'k') { e.preventDefault(); toggleBucket(); return; }
   if (!mod && !typing && key.toLowerCase() === 'v') { e.preventDefault(); setTool('select'); return; }
+  if (!mod && !typing && key.toLowerCase() === 'i') { e.preventDefault(); setTool(state.tool === 'picker' ? state.prevTool : 'picker'); return; }
   if (!mod && !typing && key.toLowerCase() === 'e') { e.preventDefault(); setTool(state.tool === 'eraser' ? 'select' : 'eraser'); return; }
   if (key === 'Escape' && state.tool !== 'select') { setTool('select'); return; }
   if (key === 'Escape') { if (state.stopBloom) { stopBloom(); draw(); return; } if (state.sel) { select(null); announce('Nothing selected.'); } return; }
@@ -889,8 +929,10 @@ const TOOLS = {
   pen: ['Pen', 'Pen. Drag to draw. Hold still at the end of a stroke to snap it into a clean shape. Press V or Esc for the Select tool.'],
   eraser: ['Eraser', 'Eraser. Rub over lines and shapes to remove them. Undo brings them back.'],
   fill: ['Fill', 'Paint bucket. Pick a color, then click any part to color it. Click the paper to color the background.'],
+  picker: ['Color picker', 'Color picker. Click any part to borrow its color. Tip: hold Alt while using the Pen or Fill to pick a color in one click.'],
 };
 function setTool(t, quiet = false) {
+  if (t === 'picker' && state.tool !== 'picker') state.prevTool = state.tool;
   state.tool = t;
   state.pen.on = t === 'pen'; state.bucket = t === 'fill'; state.eraser.on = t === 'eraser';
   document.querySelectorAll('.tool-rail [data-tool]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.tool === t));
@@ -899,6 +941,9 @@ function setTool(t, quiet = false) {
   canvas.classList.toggle('pen-on', t === 'pen');
   canvas.classList.toggle('bucket-on', t === 'fill');
   canvas.classList.toggle('eraser-on', t === 'eraser');
+  canvas.classList.toggle('picker-on', t === 'picker');
+  $('#brush-cursor').hidden = true;
+  draw();
   if (t !== 'select' && state.sel) select(null);
   if (!quiet) announce(TOOLS[t][1]);
 }
@@ -935,10 +980,11 @@ function penBlock(raw, final) {
 
 /** Turn a recognized shape into a clean block, in the pen's color and symmetry. */
 function snapBlock(rec) {
-  const name = { circle: 'Circle', ellipse: 'Oval', rect: 'Rectangle', triangle: 'Triangle', polygon: 'Polygon', shape: 'Shape', line: 'Straight line' }[rec.kind];
+  const name = { star: 'Star', circle: 'Circle', ellipse: 'Oval', rect: 'Rectangle', triangle: 'Triangle', polygon: 'Polygon', shape: 'Shape', line: 'Straight line' }[rec.kind];
   const common = { name: `${name} (drawn)`, penMade: true, repeats: repeatsForPen() };
   if (rec.kind === 'circle' || rec.kind === 'ellipse') return makeBlock('circle', { ...common, x: r1(rec.cx), y: r1(rec.cy), w: r1(rec.w), h: r1(rec.h), rot: r1(rec.rot), ...penStyle(true) });
   if (rec.kind === 'rect') return makeBlock('rect', { ...common, x: r1(rec.cx), y: r1(rec.cy), w: r1(rec.w), h: r1(rec.h), rot: r1(rec.rot), radius: 0, ...penStyle(true) });
+  if (rec.kind === 'star') return makeBlock('star', { ...common, points: rec.points, inner: Math.round(rec.inner * 100) / 100, x: r1(rec.cx), y: r1(rec.cy), w: r1(rec.r * 2), h: r1(rec.r * 2), rot: r1(rec.rot), ...penStyle(true) });
   if (rec.kind === 'polygon') return makeBlock('polygon', { ...common, sides: rec.sides, x: r1(rec.cx), y: r1(rec.cy), w: r1(rec.r * 2), h: r1(rec.r * 2), rot: r1(rec.rot), ...penStyle(true) });
   // triangle, irregular shape, line: straight edges through the corners you drew
   const closed = rec.kind !== 'line';
@@ -991,6 +1037,7 @@ function penEnd() {
   const hand = penBlock(pts, true);
   blocks().push(hand);
   refreshAll();
+  addRecent(state.pen.color);
   commit(hand.closed ? 'Drew a closed shape.' : 'Drew a line.');
   if (snapped) {
     // Two steps on purpose: Undo swaps the clean shape back to your hand-drawn line.
@@ -999,6 +1046,76 @@ function penEnd() {
     popIn(blocks().length - 1);
     commit(`Snapped into a clean ${snapped.block.name.replace(' (drawn)', '').toLowerCase()}. Undo to keep your own line.`);
   }
+}
+
+// ---------- zoom and pan (view only: exports always use the whole canvas) ----------
+let panning = null;
+function clampView() {
+  const v = state.view, vw = W() / v.z, vh = H() / v.z;
+  v.x = clamp(v.x, 0, W() - vw); v.y = clamp(v.y, 0, H() - vh);
+}
+function setZoom(z, cx = state.view.x + W() / state.view.z / 2, cy = state.view.y + H() / state.view.z / 2) {
+  const v = state.view, old = v.z;
+  v.z = clamp(z, 1, 8);
+  const fx = (cx - v.x) / (W() / old), fy = (cy - v.y) / (H() / old);
+  v.x = cx - fx * (W() / v.z); v.y = cy - fy * (H() / v.z);
+  clampView();
+  $('#zoom-level').textContent = `${Math.round(v.z * 100)}%`;
+  canvas.classList.toggle('is-zoomed', v.z > 1);
+  draw();
+}
+const zoomStep = (f) => setZoom(state.view.z * f);
+function panBy(dx, dy) { state.view.x += dx; state.view.y += dy; clampView(); draw(); }
+function panStart(e) {
+  e.preventDefault();
+  panning = { x: e.clientX, y: e.clientY, vx: state.view.x, vy: state.view.y, k: (W() / state.view.z) / canvas.getBoundingClientRect().width };
+  canvas.setPointerCapture(e.pointerId);
+  canvas.classList.add('is-panning');
+}
+function panMove(e) {
+  state.view.x = panning.vx - (e.clientX - panning.x) * panning.k;
+  state.view.y = panning.vy - (e.clientY - panning.y) * panning.k;
+  clampView(); draw();
+}
+
+// ---------- color picker and recent colors ----------
+function addRecent(c) {
+  if (!/^#[0-9a-f]{6}$/i.test(c)) return;
+  state.recent = [c, ...state.recent.filter((x) => x.toLowerCase() !== c.toLowerCase())].slice(0, 6);
+  const box = $('#recent-swatches');
+  box.replaceChildren(...state.recent.map((col) => h('button', {
+    type: 'button', class: 'qs', style: `--c:${col}`, 'aria-label': `Recent color ${col}`, title: `Recent: ${col}`,
+    onclick: () => useColor(col),
+  })));
+  box.hidden = !state.recent.length;
+}
+function useColor(c) {
+  state.pen.color = c; $('#pen-color').value = c;
+  document.querySelectorAll('#quick-swatches .qs').forEach((q) => q.setAttribute('aria-pressed', q.title === c));
+}
+function pickAt(e) {
+  const g = e.target.closest('[data-block]');
+  const b = g && blocks().find((x) => x.id === g.dataset.block);
+  let c;
+  if (!b) c = state.scene.background.c1;
+  else if (b.fillMode === 'none' || b.type === 'stroke' && !b.closed || SHAPES[b.type]?.category === 'Lines') c = b.stroke;
+  else c = b.fill;
+  if (!/^#[0-9a-f]{6}$/i.test(c)) return;
+  useColor(c); addRecent(c);
+  announce(`Picked ${c}${b ? ` from ${b.name}` : ' from the background'}.`);
+  if (state.tool === 'picker') setTool(state.prevTool === 'picker' ? 'pen' : state.prevTool, true);
+}
+
+// ---------- brush-size cursor ----------
+function moveBrushCursor(e) {
+  const cur = $('#brush-cursor');
+  if (state.tool !== 'pen' && state.tool !== 'eraser') { cur.hidden = true; return; }
+  const fr = $('#canvas-frame').getBoundingClientRect(), cr = canvas.getBoundingClientRect();
+  const d = Math.max(4, state.pen.size * (cr.width / (W() / state.view.z)));
+  cur.hidden = false;
+  cur.style.width = cur.style.height = `${d}px`;
+  cur.style.transform = `translate(${e.clientX - fr.left - d / 2}px, ${e.clientY - fr.top - d / 2}px)`;
+  cur.classList.toggle('is-eraser', state.tool === 'eraser');
 }
 
 // ---------- eraser: rub over pen lines and shapes to remove them ----------
@@ -1143,6 +1260,7 @@ function bucketAt(e) {
   }
   if (b.locked) return announce(`${b.name} is locked.`);
   const what = paintBlock(b, state.pen.color);
+  addRecent(state.pen.color);
   const i = blocks().indexOf(b);
   refreshAll(); popIn(i);
   commit(what === 'line' ? `Colored the lines of ${b.name}.` : `Colored ${b.name}.`);
@@ -1237,7 +1355,17 @@ function wireCreative() {
   $('#pen-fill').addEventListener('change', (e) => { state.pen.fillLoops = e.target.checked; });
   $('#eraser-scope').addEventListener('change', (e) => { state.eraser.scope = e.target.value; });
   setTool('select', true);
-  $('#pen-sym').addEventListener('change', (e) => { state.pen.sym = e.target.value; });
+  $('#zoom-in').addEventListener('click', () => zoomStep(1.25));
+  $('#zoom-out').addEventListener('click', () => zoomStep(0.8));
+  $('#zoom-level').addEventListener('click', () => setZoom(1));
+  canvas.addEventListener('pointerleave', () => { $('#brush-cursor').hidden = true; });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && !state.spaceDown && !['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName) && state.view.z > 1) {
+      e.preventDefault(); state.spaceDown = true; canvas.classList.add('can-pan');
+    }
+  });
+  document.addEventListener('keyup', (e) => { if (e.key === ' ') { state.spaceDown = false; canvas.classList.remove('can-pan'); } });
+  $('#pen-sym').addEventListener('change', (e) => { state.pen.sym = e.target.value; draw(); });
   $('#pen-color').addEventListener('input', (e) => { state.pen.color = e.target.value; });
   $('#pen-size').addEventListener('input', (e) => { state.pen.size = Number(e.target.value); });
   $('#guide-exit').addEventListener('click', exitGuide);

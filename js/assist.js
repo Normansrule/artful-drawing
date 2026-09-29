@@ -122,6 +122,41 @@ const deg = (r) => (r * 180) / Math.PI;
 const normRot = (d) => ((((d + 90) % 180) + 180) % 180) - 90; // -90..90
 
 /**
+ * Stars: corners that alternate between far (tips) and near (valleys) from the center.
+ * Looks at sharp turns in the raw stroke, since stars have too many corners for the polygon test.
+ */
+function asStar(raw) {
+  const ring = resample(raw, 120, true);
+  const n = ring.length;
+  const cx = ring.reduce((s, p) => s + p.x, 0) / n, cy = ring.reduce((s, p) => s + p.y, 0) / n;
+  const r = ring.map((p) => Math.hypot(p.x - cx, p.y - cy));
+  const mean = r.reduce((s, x) => s + x, 0) / n;
+  // Local maxima of distance from the center = tips.
+  const win = 6, tips = [];
+  for (let i = 0; i < n; i++) {
+    let isMax = r[i] > mean * 1.12;
+    for (let k = -win; k <= win && isMax; k++) if (k && r[(i + k + n) % n] > r[i]) isMax = false;
+    if (isMax && !tips.some((t) => Math.abs(t - i) < win || n - Math.abs(t - i) < win)) tips.push(i);
+  }
+  if (tips.length < 5 || tips.length > 8) return null; // four "tips" is just a box
+  const outer = tips.reduce((s, i) => s + r[i], 0) / tips.length;
+  const inner = Math.min(...r);
+  const ratio = inner / outer;
+  if (ratio > 0.62) return null; // too round: a polygon, not a star
+  // Tips should be evenly spaced and roughly equally long.
+  const tipCv = Math.sqrt(tips.reduce((s, i) => s + (r[i] - outer) ** 2, 0) / tips.length) / outer;
+  if (tipCv > 0.2) return null;
+  const angles = tips.map((i) => Math.atan2(ring[i].y - cy, ring[i].x - cx)).sort((a, b) => a - b);
+  const gaps = angles.map((a, i) => ((i + 1 < angles.length ? angles[i + 1] : angles[0] + 2 * Math.PI) - a));
+  const ideal = (2 * Math.PI) / tips.length;
+  if (gaps.some((g) => Math.abs(g - ideal) > ideal * 0.45)) return null;
+  const step = 360 / tips.length;
+  let rot = ((((angles[0] * 180) / Math.PI + 90) % step) + step) % step;
+  if (rot > step / 2) rot -= step;
+  return { kind: 'star', cx, cy, r: outer, points: tips.length, inner: Math.max(0.2, Math.min(0.8, ratio)), rot };
+}
+
+/**
  * Guess the clean shape a rough stroke was aiming for.
  * Returns null for scribbles (the stroke is kept as drawn).
  *   { kind: 'line', points: [a, b] }
@@ -155,6 +190,8 @@ export function recognizeShape(raw) {
   }, 0) / ring.length;
 
   const v = corners(ring, perimeter);
+  const star = asStar(raw);
+  if (star) return star;
   let polyErr = Infinity;
   if (v.length >= 3 && v.length <= 8) {
     polyErr = ring.reduce((s, p) => {

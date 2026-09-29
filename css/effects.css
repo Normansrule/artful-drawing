@@ -234,3 +234,18 @@
   .canvas-frame { padding-left: 0; }
 }
 .trace-opts[hidden] { display: none; }
+
+/* ---------- v1.6: zoom, picker, recent colors, brush cursor ---------- */
+.options-bar[data-tool='picker'] .opt[data-for~='picker'] { display: inline-flex; }
+.quick-swatches.recent { padding-right: 6px; margin-right: 2px; border-right: 1.5px solid var(--line); }
+.quick-swatches[hidden] { display: none; }
+.zoom-bar { display: inline-flex; gap: 2px; align-items: center; }
+.zoom-bar .btn { min-width: 2rem; padding: 0.25rem 0.5rem; font-variant-numeric: tabular-nums; }
+#zoom-level { min-width: 3.6rem; }
+.brush-cursor { position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.95); box-shadow: 0 0 0 1.5px rgba(34, 31, 79, 0.85), inset 0 0 0 1px rgba(34, 31, 79, 0.4); }
+.brush-cursor.is-eraser { border-style: dashed; background: rgba(255, 79, 135, 0.12); }
+.brush-cursor[hidden] { display: none; }
+#canvas.pen-on, #canvas.eraser-on { cursor: none; }
+#canvas.picker-on, #canvas.picker-on * { cursor: crosshair; }
+#canvas.can-pan, #canvas.can-pan * { cursor: grab; }
+#canvas.is-panning, #canvas.is-panning * { cursor: grabbing; }

@@ -8,10 +8,13 @@ import { REPEATERS } from './repeaters.js';
 import { uid, clone } from './util.js';
 import { isHex } from './color.js';
 
+/** Layer effects, like the layer styles in a paint program. */
+export const EFFECTS = [['none', 'None'], ['shadow', 'Drop shadow'], ['glow', 'Glow'], ['sticker', 'Sticker (white edge)'], ['soft', 'Soft focus'], ['long', 'Long shadow']];
+
 export const COMMON = {
   x: 400, y: 400, w: 200, h: 200, rot: 0, flipX: false,
   fill: '#ff5c8a', fill2: '#ffce3a', fillMode: 'solid', gradAngle: 90,
-  stroke: '#221f4f', strokeWidth: 0, opacity: 1,
+  stroke: '#221f4f', strokeWidth: 0, opacity: 1, effect: 'none',
   visible: true, locked: false, clipTo: '',
 };
 
@@ -54,6 +57,7 @@ export function normalizeScene(input) {
       if (seen.has(nb.id)) nb.id = uid();
       seen.add(nb.id);
       for (const k of ['fill', 'fill2', 'stroke']) if (!isHex(nb[k])) nb[k] = COMMON[k];
+      if (!EFFECTS.some(([id]) => id === nb.effect)) nb.effect = 'none';
       if (nb.type === 'stroke') {
         const pts = Array.isArray(nb.points) ? nb.points.filter((q) => Array.isArray(q) && Number.isFinite(q[0]) && Number.isFinite(q[1])) : [];
         nb.points = pts.length >= 2 ? pts.slice(0, 600) : clone(SHAPES.stroke.defaults.points);

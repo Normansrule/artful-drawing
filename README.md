@@ -43,11 +43,30 @@ or build anything from simple shapes.<br>
 
 **Draw it rough, it comes out neat.** Like the helpers in professional painting apps, the tools stay out of the way until they are useful:
 
-- **Snap shapes:** hold still at the end of a stroke and a rough circle, oval, box, triangle, polygon or straight line becomes a clean one. Keep moving and it doesn't. Undo gives you back your own line.
+- **Snap shapes:** hold still at the end of a stroke and a rough circle, oval, box, triangle, polygon, **star** or straight line becomes a clean one. Keep moving and it doesn't. Undo gives you back your own line.
 - **Steady hand:** a lazy-string smoother ignores small wobbles as you draw.
 - **Six brushes:** brush (thick and thin), ink, marker, pencil, neon and dots. Drawing tablets use real pen pressure; with a mouse, speed sets the thickness.
 - **Symmetry:** mirror or spin every line you draw, up to 12 ways.
+- **Layer effects:** one click adds a glow, a white sticker edge, a drop shadow, a long shadow or soft focus to any part.
+- **Zoom and pan:** pinch or `Ctrl`+scroll to zoom in on details, and hold `Space` and drag to look around.
+- **Color picker:** hold `Alt` and click to borrow any color, and your recent colors stay one click away.
 - **Eraser, bucket, layers, 150 undos.** Everything you draw stays editable.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="docs/media/star-effects.gif" alt="A rough star snapping into a clean star, then trying on glow, sticker, long shadow and drop shadow effects" width="100%"></td>
+<td width="50%" valign="top">
+
+**Make it pop.** Every part has a one-click **Effect**:
+
+| Effect | Looks like |
+|---|---|
+| Glow | a soft neon halo in the part's own color |
+| Sticker | a thick white edge with a little shadow, like a die-cut sticker |
+| Drop shadow | the part floats above the page |
+| Long shadow | a flat, retro shadow down and to the right |
+| Soft focus | gently blurred, for backgrounds and depth |
 
 </td>
 </tr>
@@ -150,8 +169,11 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 
 | Tool | What it does |
 |---|---|
-| **Tool bar** | Select (`V`), Pen (`P`), Eraser (`E`) and Fill (`K`) down the left of the canvas, with each tool's options in a bar on top, like a professional paint program |
-| **Snap shapes** | Hold still at the end of a stroke: rough circles, ovals, rectangles, triangles, polygons and lines become clean, editable shapes |
+| **Tool bar** | Select (`V`), Pen (`P`), Eraser (`E`), Color picker (`I`) and Fill (`K`) down the left of the canvas, with each tool's options in a bar on top, like a professional paint program |
+| **Effects** | Glow, sticker edge, drop shadow, long shadow and soft focus on any part |
+| **Zoom** | Pinch, `Ctrl`+scroll or the − 100% + buttons; `Space`+drag to pan; `Ctrl+0` to fit |
+| **Symmetry guides** | While the pen is out, dashed lines show where every stroke will be mirrored or spun |
+| **Snap shapes** | Hold still at the end of a stroke: rough circles, ovals, rectangles, triangles, polygons, stars and lines become clean, editable shapes |
 | **Brushes** | Brush (tapered, pressure-sensitive), ink, marker, pencil, neon and dots |
 | **Steady hand** | Smooths out wobbles while you draw; 0 is off, 1 is very smooth |
 | **Eraser** (`E`) | Rub over what you drew to remove it (or switch it to erase anything) |
@@ -204,6 +226,8 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | `P` | Pen on or off | `B` | Play the bloom |
 | `K` | Paint bucket | `E` | Eraser |
 | `V` | Select tool | `Esc` | Back to the Select tool |
+| `I` | Color picker (or `Alt`+click) | `Ctrl` + `=` / `-` / `0` | Zoom in, out, fit |
+| `Space` + drag | Look around when zoomed in | Pinch / `Ctrl`+scroll | Zoom around the pointer |
 | Arrow keys | Move 1 pixel (with `Shift`, 10) | `,` / `.` | Previous or next shape |
 | `+` / `-` | Grow or shrink | `Esc` | Deselect, stop the pen or bloom |
 | `R` / `Shift+R` | Rotate 15° | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo or redo |
@@ -314,6 +338,7 @@ flowchart LR
 ```
 
 - **No build step, no framework, no runtime dependencies.** The files you see are the files the browser runs.
+- **Layer effects** are Scalable Vector Graphics (SVG) filters (blur, morphology, offset and merge), so they stay sharp at any zoom and export with the picture.
 - **Shape snapping** fits an ellipse through the stroke using principal component analysis (PCA), finds corners with Ramer-Douglas-Peucker simplification, and keeps whichever fits better. Scribbles and curves fit neither, so they are left alone.
 - **Pen strokes** are smoothed with Catmull-Rom splines, and extra points are dropped with the Ramer-Douglas-Peucker algorithm. Each stroke is stored as normalized points, so it stays editable and resizable like any other shape.
 - **Randomness is seeded:** the same seed always gives the same sprinkle, so a share link reproduces a drawing exactly.
@@ -355,7 +380,7 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-17 tests cover the following, and GitHub Actions runs them on every push:
+19 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
@@ -365,6 +390,7 @@ npm test    # Node.js 18 or newer, nothing to install
 - pen strokes and all six brushes
 - shape snapping (rough circles, ovals, boxes, triangles, polygons and lines snap; curves, hearts and scribbles never do)
 - the steady-hand stabilizer
+- every layer effect on shapes, lines and pen strokes
 - repair of broken project files
 - share links that round-trip exactly
 - the bloom timeline

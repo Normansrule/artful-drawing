@@ -55,7 +55,15 @@ function renderBlock(b, scene, pfx, defs, reveal, bi) {
       clip = ` clip-path="url(#${cid})"`;
     }
   }
+  let fx = '';
+  if (b.effect && b.effect !== 'none') {
+    const fid = `${pfx}fx-${b.id}`;
+    const glowColor = b.fillMode === 'none' || !parts.some((p) => p.kind !== 'line') ? b.stroke : b.fill;
+    defs.push(effectFilter(fid, b.effect, glowColor, scene));
+    fx = ` filter="url(#${fid})"`;
+  }
   let out = `<g data-block="${esc(b.id)}"${b.opacity < 1 ? ` opacity="${r2(b.opacity)}"` : ''}${clip}>`;
+  if (fx) out += `<g${fx}>`;
   copies.forEach((c, i) => {
     // reveal(blockIndex, copyIndex, copyCount) -> 0..1 lets animations grow copies in.
     const t = reveal ? reveal(bi, i, copies.length) : 1;
@@ -85,7 +93,41 @@ function renderBlock(b, scene, pfx, defs, reveal, bi) {
     }
     out += '</g>';
   });
-  return out + '</g>';
+  return out + (fx ? '</g>' : '') + '</g>';
+}
+
+/**
+ * SVG filters for layer effects. The filter region covers the whole canvas in canvas units,
+ * so thin lines (whose bounding box has no height) still get their glow.
+ */
+function effectFilter(id, effect, color, scene) {
+  const W = scene.width, H = scene.height;
+  const region = `filterUnits="userSpaceOnUse" x="${-W}" y="${-H}" width="${W * 3}" height="${H * 3}"`;
+  const c = /^#[0-9a-f]{6}$/i.test(color) ? color : '#ffffff';
+  switch (effect) {
+    case 'shadow':
+      return `<filter id="${id}" ${region}><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#0b0920" flood-opacity="0.35"/></filter>`;
+    case 'glow':
+      return `<filter id="${id}" ${region}><feGaussianBlur in="SourceGraphic" stdDeviation="10" result="b1"/><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b2"/>` +
+        `<feFlood flood-color="${c}" flood-opacity="0.9"/><feComposite in2="b1" operator="in" result="g1"/>` +
+        `<feMerge><feMergeNode in="g1"/><feMergeNode in="g1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+    case 'sticker':
+      return `<filter id="${id}" ${region}><feMorphology in="SourceAlpha" operator="dilate" radius="7" result="grow"/>` +
+        `<feFlood flood-color="#ffffff"/><feComposite in2="grow" operator="in" result="edge"/>` +
+        `<feDropShadow in="edge" dx="0" dy="6" stdDeviation="5" flood-color="#0b0920" flood-opacity="0.35" result="edgeShadow"/>` +
+        `<feMerge><feMergeNode in="edgeShadow"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+    case 'soft':
+      return `<filter id="${id}" ${region}><feGaussianBlur stdDeviation="4"/></filter>`;
+    case 'long': {
+      // A flat "long shadow": the shape's silhouette repeated down and to the right.
+      const steps = [6, 12, 18, 24, 30, 36].map((d, i) => `<feOffset in="SourceAlpha" dx="${d}" dy="${d}" result="o${i}"/>`).join('');
+      const merge = [0, 1, 2, 3, 4, 5].map((i) => `<feMergeNode in="o${i}"/>`).join('');
+      return `<filter id="${id}" ${region}>${steps}<feMerge result="stack">${merge}</feMerge>` +
+        `<feFlood flood-color="#0b0920" flood-opacity="0.28"/><feComposite in2="stack" operator="in" result="shade"/>` +
+        `<feMerge><feMergeNode in="shade"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+    }
+    default: return '';
+  }
 }
 
 /** Inner SVG markup (defs + background + blocks). */

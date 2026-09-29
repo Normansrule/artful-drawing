@@ -78,6 +78,7 @@
             </select></label>
           <span class="opt" data-for="pen fill">
             <label title="Color"><span class="sr-only">Color</span><input type="color" id="pen-color" value="#ff4f87"></label>
+            <span class="quick-swatches recent" id="recent-swatches" role="group" aria-label="Recent colors" hidden></span>
             <span class="quick-swatches" id="quick-swatches" role="group" aria-label="Quick colors"></span>
           </span>
           <label class="opt" data-for="pen eraser" title="Size"><span class="opt-label">Size</span><input type="range" id="pen-size" min="2" max="40" value="8"></label>
@@ -96,7 +97,8 @@
           <label class="opt opt-check" data-for="pen" title="Fill closed loops with color"><input type="checkbox" id="pen-fill" checked> Fill loops</label>
           <label class="opt" data-for="eraser" title="What the eraser removes"><span class="sr-only">Eraser removes</span>
             <select id="eraser-scope"><option value="mine" selected>Only what I drew</option><option value="all">Everything</option></select></label>
-          <span class="opt" data-for="fill"><span class="opt-hint">Click a part to color it. Click the paper for the background.</span></span>
+          <span class="opt" data-for="fill"><span class="opt-hint">Click a part to color it. Click the paper for the background. <kbd>Alt</kbd>+click borrows a color.</span></span>
+          <span class="opt" data-for="picker"><span class="opt-hint">Click any part to borrow its color, then you go straight back to your tool.</span></span>
         <div class="trace-bar opt" data-for="pen select" role="group" aria-label="Tracing photo">
           <button class="btn" id="btn-trace" title="Put a photo over the canvas to trace it with the pen"><span aria-hidden="true">📷</span> Trace</button>
           <span class="trace-opts" id="trace-opts" hidden>
@@ -105,6 +107,11 @@
           </span>
           <input type="file" id="trace-file" accept="image/*" hidden>
         </div>
+        </div>
+        <div class="zoom-bar" role="group" aria-label="Zoom">
+          <button class="btn btn-small" id="zoom-out" aria-label="Zoom out" title="Zoom out (Ctrl+minus)">−</button>
+          <button class="btn btn-small" id="zoom-level" title="Fit to screen (Ctrl+0)">100%</button>
+          <button class="btn btn-small" id="zoom-in" aria-label="Zoom in" title="Zoom in (Ctrl+plus, or pinch)">+</button>
         </div>
         <label class="switch"><input type="checkbox" id="opt-guides" checked> Guides</label>
         <label class="switch"><input type="checkbox" id="opt-snap"> Snap to 10px</label>
@@ -121,8 +128,10 @@
         <button data-tool="select" aria-pressed="true" title="Select and move (V)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.5L10 19z"/></svg><span>Select</span><kbd>V</kbd></button>
         <button data-tool="pen" id="btn-pen" aria-pressed="false" title="Pen: draw freehand (P)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.5-5L16 4.5a2.1 2.1 0 013 3L8.5 18z"/><path d="M14 7l3 3"/></svg><span>Pen</span><kbd>P</kbd></button>
         <button data-tool="eraser" aria-pressed="false" title="Eraser (E)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20h11"/><path d="M4.5 14.5l9-9a2 2 0 012.8 0l3.2 3.2a2 2 0 010 2.8L13 18H8.5z"/></svg><span>Eraser</span><kbd>E</kbd></button>
+        <button data-tool="picker" aria-pressed="false" title="Color picker: borrow a color (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l2-2 1-4 7-7 3 3-7 7-4 1z"/><path d="M14 7l2-2a2.1 2.1 0 013 3l-2 2"/></svg><span>Picker</span><kbd>I</kbd></button>
         <button data-tool="fill" id="btn-bucket" aria-pressed="false" title="Paint bucket (K)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11l7-7 7 7-7 7z"/><path d="M19 15c0 1.5 1 2.5 1 3.5a1 1 0 01-2 0c0-1 1-2 1-3.5z"/></svg><span>Fill</span><kbd>K</kbd></button>
       </nav>
+        <div class="brush-cursor" id="brush-cursor" hidden aria-hidden="true"></div>
         <div class="guide-card" id="guide" role="region" aria-label="Draw along guide" hidden>
           <div class="guide-top"><span class="guide-count" id="guide-count"></span><button class="icon-btn" id="guide-exit" aria-label="Stop drawing along" title="Stop drawing along">✕</button></div>
           <h3 class="guide-title" id="guide-title"></h3>
@@ -191,7 +200,9 @@
             <dt><kbd>B</kbd></dt><dd>Play the bloom animation</dd>
             <dt><kbd>P</kbd></dt><dd>Pen on or off (draw freehand)</dd>
             <dt><kbd>K</kbd></dt><dd>Paint bucket on or off</dd>
-            <dt><kbd>V</kbd> / <kbd>E</kbd></dt><dd>Select tool / Eraser</dd>
+            <dt><kbd>V</kbd> / <kbd>E</kbd> / <kbd>I</kbd></dt><dd>Select tool / Eraser / Color picker</dd>
+            <dt><kbd>Ctrl</kbd>+scroll or pinch</dt><dd>Zoom (Ctrl+0 fits the screen)</dd>
+            <dt><kbd>Space</kbd>+drag</dt><dd>Look around while zoomed in</dd>
             <dt><kbd>?</kbd></dt><dd>This list</dd>
           </dl>
         </section>
