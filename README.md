@@ -75,6 +75,27 @@ or build anything from simple shapes.<br>
 </tr>
 </table>
 
+## 🎨 Change your mind as often as you like
+
+<table>
+<tr>
+<td width="40%" valign="top"><img src="docs/media/recolor.gif" alt="A mandala recolored five times in one click each: analogous teal, complementary yellow, triadic violet, split pink and monochrome blue" width="100%"></td>
+<td width="60%" valign="top">
+
+**✨ Recolor all.** Pick one color, pick a harmony (analogous, complementary, triadic, split or monochrome) and press **Recolor all**. Every color in your drawing changes, but each one keeps its lightness, so light stays light and dark stays dark. It's the same idea as "recolor artwork" in professional design apps.
+
+**🕘 History.** Every step you take is listed by name ("Added Heart", "Snapped into a clean star", "Aligned 3 parts"). Click any step to jump back to it, then forward again.
+
+**🔲 Select several parts.** Drag a box on the empty paper, `Shift`+click parts, or press `Ctrl+A`. Then move, nudge, duplicate or delete them together, and use **Align** to line them up or space them evenly.
+
+**📐 Any canvas shape.** Square, poster (3:4), card (5:7), landscape (4:3), desktop (16:9) or phone wallpaper (9:16). Your drawing stays centered when you switch.
+
+**🏷 Stickers.** *Download sticker* saves a PNG with a see-through background, ready for chat apps, slides and printable sticker paper.
+
+</td>
+</tr>
+</table>
+
 ## ✏️ Four easy ways to draw
 
 <table>
@@ -172,6 +193,10 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Tool bar** | Select (`V`), Pen (`P`), Eraser (`E`), Color picker (`I`) and Fill (`K`) down the left of the canvas, with each tool's options in a bar on top, like a professional paint program |
 | **Effects** | Glow, sticker edge, drop shadow, long shadow and soft focus on any part |
 | **Zoom** | Pinch, `Ctrl`+scroll or the − 100% + buttons; `Space`+drag to pan; `Ctrl+0` to fit |
+| **Recolor all** | One color plus a harmony recolors the whole drawing, keeping lights and darks |
+| **History** | A named list of every step; click one to jump back or forward |
+| **Select several** | Box-select, `Shift`+click or `Ctrl+A`; move, duplicate, delete and align together |
+| **Canvas shape** | Square, poster, card, landscape, desktop or phone wallpaper |
 | **Symmetry guides** | While the pen is out, dashed lines show where every stroke will be mirrored or spun |
 | **Snap shapes** | Hold still at the end of a stroke: rough circles, ovals, rectangles, triangles, polygons, stars and lines become clean, editable shapes |
 | **Brushes** | Brush (tapered, pressure-sensitive), ink, marker, pencil, neon and dots |
@@ -210,6 +235,7 @@ Solid, gradient or glow fills, **8 curated palettes**, a *color shift per copy* 
 | Save as | For |
 |---|---|
 | **PNG picture** | posting, printing, messaging (saved at twice the canvas size) |
+| **Sticker PNG** | the same picture with a see-through background |
 | **SVG vector** | Inkscape, Illustrator, Figma, vinyl cutters and laser engravers |
 | **WebM video** | the bloom animation, ready for social posts |
 | **Project file** | reopening later with every shape still editable |
@@ -228,6 +254,7 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | `V` | Select tool | `Esc` | Back to the Select tool |
 | `I` | Color picker (or `Alt`+click) | `Ctrl` + `=` / `-` / `0` | Zoom in, out, fit |
 | `Space` + drag | Look around when zoomed in | Pinch / `Ctrl`+scroll | Zoom around the pointer |
+| `Shift`+click | Add a part to the selection | `Ctrl+A` | Select every part |
 | Arrow keys | Move 1 pixel (with `Shift`, 10) | `,` / `.` | Previous or next shape |
 | `+` / `-` | Grow or shrink | `Esc` | Deselect, stop the pen or bloom |
 | `R` / `Shift+R` | Rotate 15° | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo or redo |
@@ -380,7 +407,7 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-19 tests cover the following, and GitHub Actions runs them on every push:
+21 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
@@ -391,6 +418,8 @@ npm test    # Node.js 18 or newer, nothing to install
 - shape snapping (rough circles, ovals, boxes, triangles, polygons and lines snap; curves, hearts and scribbles never do)
 - the steady-hand stabilizer
 - every layer effect on shapes, lines and pen strokes
+- color harmonies (every picture, every harmony, and no light or dark ever moves)
+- every canvas shape (the drawing stays centered and the size survives saving)
 - repair of broken project files
 - share links that round-trip exactly
 - the bloom timeline

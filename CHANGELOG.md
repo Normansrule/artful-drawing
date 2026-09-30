@@ -1,0 +1,34 @@
+# Changelog
+
+All notable changes to artful drawing. Each version is one release zip.
+
+## 1.7.0
+- **Recolor all:** one color plus a harmony (analogous, complementary, triadic, split, monochrome) recolors the whole drawing while keeping every light and dark.
+- **History panel:** a named list of every step; click to jump back or forward.
+- **Select several parts:** box-select on empty paper, `Shift`+click, `Ctrl+A`; move, nudge, duplicate and delete together; **Align** and **space evenly**.
+- **Canvas shapes:** square, poster 3:4, card 5:7, landscape 4:3, desktop 16:9, phone 9:16. The drawing stays centered.
+- **Sticker export:** PNG with a see-through background.
+
+## 1.6.0
+- Stars snap into clean stars. Layer effects: glow, sticker edge, drop shadow, long shadow, soft focus.
+- Zoom and pan (pinch, `Ctrl`+scroll, `Space`+drag, `Ctrl+0`). Color picker (`I`, or `Alt`+click). Recent colors. Symmetry guides and a brush-size cursor.
+
+## 1.5.0
+- Tool bar (Select, Pen, Eraser, Fill) with a context options bar.
+- Snap shapes: hold still to turn rough circles, ovals, boxes, triangles, polygons and lines into clean ones.
+- Steady-hand smoothing, six brushes with pressure, and an eraser.
+
+## 1.4.0
+- Coloring pages for every picture, paint bucket, quick colors, tracing a photo, My drawings, and links that open straight into a mode.
+
+## 1.3.0
+- Renamed to **artful drawing**. Pen with symmetry, seven Draw along guides with tracing-paper hints, and a welcome screen.
+
+## 1.2.0
+- Night theme, symmetry painter, 3D gallery ring, click sparks and floating stickers on the home page.
+
+## 1.1.0
+- Landing page with live ink simulation, scroll story and animated examples; Bloom animation and WebM video export; Learn page playgrounds.
+
+## 1.0.0
+- First release: 29 blocks, 6 stackable repeats, clipping, 13 starter pictures, Learn and References pages.

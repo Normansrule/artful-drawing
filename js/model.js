@@ -30,6 +30,29 @@ export function makeBlock(type, o = {}) {
   return b;
 }
 
+/** Canvas shapes people ask for most: square, posters, cards, desktop and phone wallpapers. */
+export const CANVAS_SHAPES = [
+  ['square', 'Square', 800, 800],
+  ['portrait', 'Portrait 3:4 (poster)', 800, 1066],
+  ['card', 'Card 5:7', 800, 1120],
+  ['landscape', 'Landscape 4:3', 1066, 800],
+  ['wide', 'Wide 16:9 (desktop)', 1280, 720],
+  ['phone', 'Phone 9:16 (wallpaper)', 720, 1280],
+];
+
+/** Change the canvas size, keeping the drawing centered. Returns the same scene. */
+export function resizeCanvas(scene, w, h) {
+  const dx = (w - scene.width) / 2, dy = (h - scene.height) / 2;
+  for (const b of scene.blocks) {
+    b.x = Math.round((b.x + dx) * 10) / 10; b.y = Math.round((b.y + dy) * 10) / 10;
+    for (const r of b.repeats || []) {
+      if (r.around === 'point') { r.cx = (r.cx ?? 0) + dx; r.cy = (r.cy ?? 0) + dy; }
+    }
+  }
+  scene.width = w; scene.height = h;
+  return scene;
+}
+
 export function blankScene() {
   return {
     version: 1, width: 800, height: 800,
@@ -42,6 +65,8 @@ export function blankScene() {
 export function normalizeScene(input) {
   const s = blankScene();
   if (!input || typeof input !== 'object') return s;
+  const size = (v) => (Number.isFinite(v) ? Math.max(200, Math.min(2400, Math.round(v))) : 800);
+  s.width = size(input.width); s.height = size(input.height);
   const bg = input.background || {};
   s.background = {
     mode: ['solid', 'linear', 'radial'].includes(bg.mode) ? bg.mode : 'solid',

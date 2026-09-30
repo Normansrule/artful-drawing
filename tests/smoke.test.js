@@ -240,3 +240,39 @@ test('rough stars snap into stars, but boxes stay boxes', () => {
   assert.equal(recognizeShape(jitter(polygonPts(4, 150, 45), 6)).kind, 'rect');
   assert.equal(recognizeShape(jitter(polygonPts(5, 150), 5)).kind, 'polygon');
 });
+
+import { harmonize, HARMONIES } from '../js/coloring.js';
+import { CANVAS_SHAPES, resizeCanvas } from '../js/model.js';
+import { hexToRgb, rgbToHsl } from '../js/color.js';
+
+test('recoloring from one color keeps every light and dark in place', () => {
+  const light = (c) => rgbToHsl(...hexToRgb(c))[2];
+  for (const t of TEMPLATES) {
+    const before = normalizeScene(t.build());
+    for (const [kind] of HARMONIES) {
+      const after = harmonize(before, '#3ee6c1', kind);
+      clean(renderSceneSVG(after), `${t.id} ${kind}`);
+      after.blocks.forEach((b, i) => {
+        const o = before.blocks[i];
+        if (b.type === 'face' || o.fillMode === 'none') return;
+        assert.ok(Math.abs(light(b.fill) - Math.max(0.08, Math.min(0.97, light(o.fill)))) < 0.03, `${t.id}/${b.name} (${kind}) changed lightness`);
+      });
+    }
+  }
+  const mono = harmonize(getTemplate('flower').build(), '#ff4f87', 'mono');
+  const hues = new Set(mono.blocks.filter((b) => b.fillMode !== 'none' && rgbToHsl(...hexToRgb(b.fill))[1] > 0.3).map((b) => Math.round(rgbToHsl(...hexToRgb(b.fill))[0] / 10)));
+  assert.equal(hues.size, 1, 'monochrome should use a single hue');
+});
+
+test('every canvas shape keeps the drawing centered and survives saving', () => {
+  for (const [id, , w, h] of CANVAS_SHAPES) {
+    const s = resizeCanvas(normalizeScene(getTemplate('butterfly').build()), w, h);
+    assert.equal(s.width, w); assert.equal(s.height, h);
+    const body = s.blocks.find((b) => b.name === 'Body');
+    assert.ok(Math.abs(body.x - w / 2) < 1 && Math.abs(body.y - (420 + (h - 800) / 2)) < 30, `${id}: drawing should stay centered`);
+    clean(renderSceneSVG(s), `canvas ${id}`);
+    const again = normalizeScene(JSON.parse(JSON.stringify(s)));
+    assert.equal(again.width, w); assert.equal(again.height, h);
+  }
+  assert.equal(normalizeScene({ width: 99999, height: -5 }).width, 2400);
+});

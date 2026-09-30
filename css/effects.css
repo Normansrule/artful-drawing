@@ -249,3 +249,24 @@
 #canvas.picker-on, #canvas.picker-on * { cursor: crosshair; }
 #canvas.can-pan, #canvas.can-pan * { cursor: grab; }
 #canvas.is-panning, #canvas.is-panning * { cursor: grabbing; }
+
+/* ---------- v1.7: history, group selection, align, harmony ---------- */
+.history { border-top: 1.5px solid var(--line); padding: 0.8rem 1rem 1.2rem; }
+.history h2 { font-size: 1.05rem; margin: 0 0 0.2rem; }
+#history-list { list-style: none; margin: 0.4rem 0 0; padding: 0; max-height: 220px; overflow: auto; display: grid; gap: 2px; counter-reset: step; }
+#history-list li { counter-increment: step; }
+#history-list button {
+  width: 100%; text-align: left; font: 400 0.84rem/1.25 var(--body); color: var(--ink); background: transparent;
+  border: 0; border-radius: 8px; padding: 0.35rem 0.5rem 0.35rem 2rem; cursor: pointer; position: relative;
+}
+#history-list button::before { content: counter(step); position: absolute; left: 0.5rem; top: 0.38rem; font-size: 0.72rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+#history-list button:hover { background: var(--tint); }
+#history-list .now button { background: linear-gradient(90deg, rgba(255, 79, 135, 0.85), rgba(139, 107, 255, 0.85)); color: #fff; font-weight: 700; }
+#history-list .now button::before { color: #fff; }
+#history-list .future button { opacity: 0.45; font-style: italic; }
+.group-banner { margin: 0.8rem 1rem 0; padding: 0.8rem 0.9rem; border-radius: 14px; background: linear-gradient(135deg, rgba(139, 107, 255, 0.18), rgba(255, 79, 135, 0.1)); border: 1.5px solid rgba(139, 107, 255, 0.5); }
+.group-banner strong { font: 800 1.05rem/1.2 var(--display); }
+.group-banner p { margin: 0.3rem 0 0.6rem; font-size: 0.85rem; color: var(--ink-2); }
+.align-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.align-row .btn { min-width: 2.2rem; font-size: 1rem; padding: 0.2rem 0.45rem; }
+.opt-harmony select { max-width: 13rem; }

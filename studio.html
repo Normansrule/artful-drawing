@@ -38,6 +38,7 @@
         <summary class="btn btn-primary">Save</summary>
         <div class="menu-list">
           <button data-act="png">Download picture (PNG)</button>
+          <button data-act="sticker">Download sticker (see-through PNG)</button>
           <button data-act="svg">Download vector (SVG)</button>
           <button data-act="video">Download bloom animation (video)</button>
           <button data-act="keep">Save to My drawings</button>
@@ -97,6 +98,10 @@
           <label class="opt opt-check" data-for="pen" title="Fill closed loops with color"><input type="checkbox" id="pen-fill" checked> Fill loops</label>
           <label class="opt" data-for="eraser" title="What the eraser removes"><span class="sr-only">Eraser removes</span>
             <select id="eraser-scope"><option value="mine" selected>Only what I drew</option><option value="all">Everything</option></select></label>
+          <span class="opt opt-harmony" data-for="fill" title="Recolor the whole drawing from the current color, keeping its lights and darks">
+            <label><span class="sr-only">Color harmony</span><select id="harmony"></select></label>
+            <button class="btn btn-small" id="btn-harmony" type="button">✨ Recolor all</button>
+          </span>
           <span class="opt" data-for="fill"><span class="opt-hint">Click a part to color it. Click the paper for the background. <kbd>Alt</kbd>+click borrows a color.</span></span>
           <span class="opt" data-for="picker"><span class="opt-hint">Click any part to borrow its color, then you go straight back to your tool.</span></span>
         <div class="trace-bar opt" data-for="pen select" role="group" aria-label="Tracing photo">
@@ -156,6 +161,11 @@
         <p class="note">Top of the list is drawn on top.</p>
         <ol id="layers"></ol>
       </section>
+      <section class="history" aria-labelledby="history-title">
+        <h2 id="history-title">History</h2>
+        <p class="note">Every step you took. Click one to go back to it.</p>
+        <ol id="history-list"></ol>
+      </section>
     </aside>
   </main>
 
@@ -203,6 +213,8 @@
             <dt><kbd>V</kbd> / <kbd>E</kbd> / <kbd>I</kbd></dt><dd>Select tool / Eraser / Color picker</dd>
             <dt><kbd>Ctrl</kbd>+scroll or pinch</dt><dd>Zoom (Ctrl+0 fits the screen)</dd>
             <dt><kbd>Space</kbd>+drag</dt><dd>Look around while zoomed in</dd>
+            <dt><kbd>Shift</kbd>+click</dt><dd>Add a part to the selection (or drag a box on empty paper)</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>Select every part</dd>
             <dt><kbd>?</kbd></dt><dd>This list</dd>
           </dl>
         </section>

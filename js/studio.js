@@ -3,12 +3,12 @@
 
 import { SHAPES, CATEGORIES } from './shapes.js';
 import { REPEATERS } from './repeaters.js';
-import { makeBlock, makeRepeat, blankScene, normalizeScene, EFFECTS } from './model.js';
+import { makeBlock, makeRepeat, blankScene, normalizeScene, EFFECTS, CANVAS_SHAPES, resizeCanvas } from './model.js';
 import { renderSceneInner, renderSceneSVG, sceneStats } from './render.js';
 import { playBloom, recordBloom, canRecordVideo } from './bloom.js';
 import { spotlight, reducedMotion } from './fx.js';
 import { RECIPES, getRecipe } from './recipes.js';
-import { toColoringPage, paintBlock } from './coloring.js';
+import { toColoringPage, paintBlock, harmonize, HARMONIES } from './coloring.js';
 import { makeStabilizer, speedPressure, recognizeShape } from './assist.js';
 import { TEMPLATES, getTemplate } from './templates.js';
 import { PALETTES } from './color.js';
@@ -33,6 +33,8 @@ const state = {
   view: { x: 0, y: 0, z: 1 }, // zoom and pan (the drawing itself never changes)
   recent: [],        // recently used colors
   spaceDown: false,
+  multi: new Set(),   // extra selected parts (Shift+click or drag a box)
+  marquee: null,
   pen: { on: false, sym: 'mirror', color: '#ff4f87', size: 8, brush: 'brush', steady: 0.35, snap: true, fillLoops: true },
   eraser: { on: false, scope: 'mine' },
   penPreview: null,  // the stroke being drawn right now
@@ -76,17 +78,23 @@ function announce(msg) {
 
 // ---------- history (undo / redo) ----------
 const undoStack = [], redoStack = [];
-let committed = '';
+let committed = '', committedLabel = 'Opened';
 let commitTimer = null;
+const labelOf = (msg) => {
+  if (!msg) return 'Adjusted';
+  const m = String(msg).split(/(?<=\.)\s/)[0].replace(/\.$/, '');
+  return m.length > 46 ? m.slice(0, 44) + '…' : m;
+};
 
 function persist() {
   try { localStorage.setItem(STORAGE_KEY, committed); } catch { /* private mode or storage full: drawing still works */ }
 }
-function commit(msg) {
+function commit(msg, label) {
   clearTimeout(commitTimer); commitTimer = null;
   const snap = JSON.stringify(state.scene);
   if (snap !== committed) {
-    undoStack.push(committed);
+    undoStack.push({ snap: committed, label: committedLabel });
+    committedLabel = label || labelOf(msg);
     if (undoStack.length > 150) undoStack.shift();
     redoStack.length = 0;
     committed = snap;
@@ -104,25 +112,45 @@ function restore(snap) {
   refreshAll();
   persist();
 }
-function undo() {
+function undo(quiet = false) {
   flushCommit();
   if (!undoStack.length) return announce('Nothing to undo.');
-  redoStack.push(committed); committed = undoStack.pop(); restore(committed); announce('Undone.');
+  redoStack.push({ snap: committed, label: committedLabel });
+  const e = undoStack.pop(); committed = e.snap; committedLabel = e.label;
+  restore(committed); if (!quiet) announce(`Undid: ${redoStack[redoStack.length - 1].label}.`);
 }
-function redo() {
+function redo(quiet = false) {
   flushCommit();
   if (!redoStack.length) return announce('Nothing to redo.');
-  undoStack.push(committed); committed = redoStack.pop(); restore(committed); announce('Redone.');
+  undoStack.push({ snap: committed, label: committedLabel });
+  const e = redoStack.pop(); committed = e.snap; committedLabel = e.label;
+  restore(committed); if (!quiet) announce(`Redid: ${committedLabel}.`);
 }
 function updateHistoryButtons() {
   $('#btn-undo').disabled = !undoStack.length && !commitTimer;
   $('#btn-redo').disabled = !redoStack.length;
+  renderHistory();
+}
+
+/** The History panel: every step you took; click one to go back (or forward) to it. */
+function renderHistory() {
+  const list = $('#history-list');
+  if (!list) return;
+  const past = undoStack.slice(-40).map((e, i, arr) => ({ label: e.label, back: arr.length - i }));
+  const future = [...redoStack].reverse().map((e, i) => ({ label: e.label, fwd: i + 1 }));
+  list.replaceChildren(
+    ...past.map((e) => h('li', {}, h('button', { type: 'button', onclick: () => { for (let k = 0; k < e.back; k++) undo(true); announce(`Went back to: ${committedLabel}.`); } }, e.label))),
+    h('li', { class: 'now' }, h('button', { type: 'button', 'aria-current': 'step' }, committedLabel)),
+    ...future.map((e) => h('li', { class: 'future' }, h('button', { type: 'button', onclick: () => { for (let k = 0; k < e.fwd; k++) redo(true); announce(`Went forward to: ${committedLabel}.`); } }, e.label))),
+  );
+  list.querySelector('.now')?.scrollIntoView({ block: 'nearest' });
 }
 
 // ---------- drawing ----------
 function draw() {
   if (state.stopBloom) stopBloom();
   const v = state.view;
+  canvas.style.aspectRatio = `${W()} / ${H()}`;
   canvas.setAttribute('viewBox', `${r1(v.x)} ${r1(v.y)} ${r1(W() / v.z)} ${r1(H() / v.z)}`);
   const t0 = performance.now();
   canvas.innerHTML = renderSceneInner(viewScene(), { prefix: 's-', reveal: state.reveal }) + ghostMarkup() + traceMarkup();
@@ -238,6 +266,15 @@ function drawOverlay() {
       `</g><g stroke="#ff4f87" stroke-opacity="0.45" stroke-dasharray="6 6" ${ns}><line x1="${w / 2}" y1="0" x2="${w / 2}" y2="${hh}" ${ns}/><line x1="0" y1="${hh / 2}" x2="${w}" y2="${hh / 2}" ${ns}/></g>`;
   }
   if (state.tool === 'pen' && state.pen.sym !== 'none') o += symmetryGuides(w, hh, ns);
+  for (const gb of groupBlocks()) {
+    if (gb.id === state.sel || !gb.visible) continue;
+    const bb = bboxOf(gb);
+    if (bb) o += `<rect x="${bb.x - 6}" y="${bb.y - 6}" width="${bb.width + 12}" height="${bb.height + 12}" fill="none" stroke="#8b6bff" stroke-width="2" stroke-dasharray="4 4" ${ns}/>`;
+  }
+  if (state.marquee) {
+    const m = state.marquee, x = Math.min(m.x0, m.x1), y = Math.min(m.y0, m.y1);
+    o += `<rect x="${x}" y="${y}" width="${Math.abs(m.x1 - m.x0)}" height="${Math.abs(m.y1 - m.y0)}" fill="rgba(139,107,255,0.12)" stroke="#8b6bff" stroke-width="1.5" stroke-dasharray="5 4" ${ns}/>`;
+  }
   const b = selected();
   if (b && b.visible) {
     const g = canvas.querySelector(`[data-block="${CSS.escape(b.id)}"]`);
@@ -265,8 +302,8 @@ function drawOverlay() {
 }
 
 function updateStatus() {
-  const b = selected();
-  $('#stage-status').textContent = b
+  const b = selected(), n = groupBlocks().length;
+  $('#stage-status').textContent = n > 1 ? `${n} parts selected. Drag or use the arrow keys to move them together.` : b
     ? `${b.name}: x ${Math.round(b.x)}, y ${Math.round(b.y)}, ${Math.round(b.w)}×${Math.round(b.h)}, ${Math.round(b.rot)}°`
     : 'Nothing selected. Press . to pick a block.';
 }
@@ -285,11 +322,64 @@ function refreshPanelsSoon() {
 }
 
 // ---------- selection and block actions ----------
-function select(id) {
+function select(id, keepGroup = false) {
+  if (!keepGroup) state.multi.clear();
   state.sel = id;
   draw();
   renderInspector();
   renderLayers();
+}
+
+/** Everything selected: the main part plus any Shift+clicked or box-selected parts. */
+function groupBlocks() {
+  const ids = new Set([state.sel, ...state.multi].filter(Boolean));
+  return blocks().filter((b) => ids.has(b.id));
+}
+function toggleInGroup(b) {
+  if (!state.sel) { select(b.id); return; }
+  if (b.id === state.sel) { const next = [...state.multi][0] || null; state.multi.delete(next); state.sel = next; }
+  else if (state.multi.has(b.id)) state.multi.delete(b.id);
+  else state.multi.add(b.id);
+  draw(); renderInspector(); renderLayers();
+}
+function selectMany(list) {
+  state.multi.clear();
+  if (!list.length) { select(null); return; }
+  state.sel = list[list.length - 1].id;
+  list.slice(0, -1).forEach((b) => state.multi.add(b.id));
+  draw(); renderInspector(); renderLayers();
+}
+function bboxOf(b) {
+  const g = canvas.querySelector(`[data-block="${CSS.escape(b.id)}"]`);
+  try { const bb = g && g.getBBox(); return bb && bb.width + bb.height > 0 ? bb : null; } catch { return null; }
+}
+/** Line parts up with each other, like Align in a design app. */
+function alignGroup(how) {
+  const items = groupBlocks().map((b) => ({ b, bb: bboxOf(b) })).filter((x) => x.bb && !x.b.locked);
+  if (items.length < 2) return;
+  const minX = Math.min(...items.map((x) => x.bb.x)), maxX = Math.max(...items.map((x) => x.bb.x + x.bb.width));
+  const minY = Math.min(...items.map((x) => x.bb.y)), maxY = Math.max(...items.map((x) => x.bb.y + x.bb.height));
+  for (const { b, bb } of items) {
+    if (how === 'left') b.x += minX - bb.x;
+    if (how === 'right') b.x += maxX - (bb.x + bb.width);
+    if (how === 'center') b.x += (minX + maxX) / 2 - (bb.x + bb.width / 2);
+    if (how === 'top') b.y += minY - bb.y;
+    if (how === 'bottom') b.y += maxY - (bb.y + bb.height);
+    if (how === 'middle') b.y += (minY + maxY) / 2 - (bb.y + bb.height / 2);
+  }
+  if (how === 'spread-x' || how === 'spread-y') {
+    const ax = how === 'spread-x';
+    items.sort((p, q) => (ax ? p.bb.x - q.bb.x : p.bb.y - q.bb.y));
+    const first = items[0], last = items[items.length - 1];
+    const start = ax ? first.bb.x + first.bb.width / 2 : first.bb.y + first.bb.height / 2;
+    const end = ax ? last.bb.x + last.bb.width / 2 : last.bb.y + last.bb.height / 2;
+    items.forEach(({ b, bb }, i) => {
+      const target = start + ((end - start) * i) / (items.length - 1);
+      if (ax) b.x += target - (bb.x + bb.width / 2); else b.y += target - (bb.y + bb.height / 2);
+    });
+  }
+  refreshAll();
+  commit(`Aligned ${items.length} parts.`);
 }
 
 function addBlock(type) {
@@ -512,6 +602,21 @@ function paletteRow(onPick, label) {
 }
 
 function renderInspector() {
+  renderInspectorBase();
+  const n = groupBlocks().length;
+  if (n < 2) return;
+  const bar = (how, label, title) => h('button', { type: 'button', class: 'btn btn-small', title, onclick: () => alignGroup(how) }, label);
+  $('#inspector').prepend(h('section', { class: 'group-banner', 'aria-label': 'Selected parts' },
+    h('strong', {}, `${n} parts selected`),
+    h('p', {}, 'Drag or use the arrow keys to move them together. Delete, duplicate and the layer keys work on all of them. The settings below are for the last one you picked.'),
+    h('div', { class: 'align-row', role: 'group', 'aria-label': 'Align' },
+      bar('left', '⇤', 'Align left edges'), bar('center', '↔', 'Center horizontally'), bar('right', '⇥', 'Align right edges'),
+      bar('top', '⤒', 'Align top edges'), bar('middle', '↕', 'Center vertically'), bar('bottom', '⤓', 'Align bottom edges'),
+      bar('spread-x', '⋯', 'Space evenly left to right'), bar('spread-y', '⋮', 'Space evenly top to bottom')),
+  ));
+}
+
+function renderInspectorBase() {
   const root = $('#inspector');
   const b = selected();
   root.replaceChildren();
@@ -607,10 +712,26 @@ function renderInspector() {
 
 function renderCanvasSettings(root) {
   const bg = state.scene.background;
-  if (!state.bgSeen) { state.openSections.add('bg'); state.bgSeen = true; }
+  if (!state.bgSeen) { state.openSections.add('bg'); state.openSections.add('size'); state.bgSeen = true; }
   root.append(
     h('div', { class: 'insp-head' }, h('div', { class: 'kind' }, 'Nothing selected'), h('h2', {}, 'Canvas'),
       h('p', {}, 'Pick a block from the shelf, click something on the canvas, or open a starter picture. Here you can change the background.')),
+    section('size', 'Canvas shape',
+      (() => {
+        const cur = CANVAS_SHAPES.find(([, , cw, ch]) => cw === W() && ch === H());
+        const id = fid();
+        const sel = h('select', { id, onchange: () => {
+          const shape = CANVAS_SHAPES.find(([k]) => k === sel.value);
+          if (!shape) return;
+          resizeCanvas(state.scene, shape[2], shape[3]);
+          state.view = { x: 0, y: 0, z: 1 }; $('#zoom-level').textContent = '100%';
+          refreshAll(); commit(`Canvas is now ${shape[1].toLowerCase()}. Your drawing stays centered.`);
+        } }, CANVAS_SHAPES.map(([k, label, cw, ch]) => h('option', { value: k, selected: cur && cur[0] === k }, `${label} · ${cw}×${ch}`)),
+        cur ? null : h('option', { value: '', selected: true }, `Custom · ${W()}×${H()}`));
+        return h('div', { class: 'field' }, h('label', { for: id }, 'Shape'), sel,
+          h('p', { class: 'note' }, 'Posters and cards suit portrait; phone wallpapers suit 9:16. Your drawing stays centered.'));
+      })(),
+    ),
     section('bg', 'Background',
       control(bg, { key: 'mode', label: 'Style', type: 'select', options: [['solid', 'Solid color'], ['linear', 'Gradient'], ['radial', 'Glow (round gradient)']] }),
       h('div', { class: 'two-col' },
@@ -661,13 +782,21 @@ canvas.addEventListener('pointerdown', (e) => {
   if (state.bucket) { bucketAt(e); return; }
   if (state.eraser.on) { eraseStart(e); return; }
   const g = e.target.closest('[data-block]');
-  if (!g) { if (state.sel) select(null); return; }
+  const p = toSvgPoint(e);
+  if (!g) { // empty paper: drag a box to select several parts
+    if (!e.shiftKey && state.sel) select(null);
+    state.marquee = { x0: p.x, y0: p.y, x1: p.x, y1: p.y, add: e.shiftKey };
+    canvas.setPointerCapture(e.pointerId);
+    return;
+  }
   const b = blocks().find((x) => x.id === g.dataset.block);
   if (!b) return;
-  if (state.sel !== b.id) select(b.id);
+  if (e.shiftKey) { toggleInGroup(b); return; }
+  const inGroup = groupBlocks().some((x) => x.id === b.id) && groupBlocks().length > 1;
+  if (!inGroup && state.sel !== b.id) select(b.id);
   if (b.locked) { announce(`${b.name} is locked. Unlock it in Layers to move it.`); return; }
-  const p = toSvgPoint(e);
-  drag = { b, dx: b.x - p.x, dy: b.y - p.y, moved: false };
+  const items = (inGroup ? groupBlocks() : [b]).filter((x) => !x.locked).map((x) => ({ b: x, dx: x.x - p.x, dy: x.y - p.y }));
+  drag = { b, items, moved: false };
   canvas.setPointerCapture(e.pointerId);
   canvas.classList.add('dragging');
 });
@@ -677,22 +806,42 @@ canvas.addEventListener('pointermove', (e) => {
   if (panning) { panMove(e); return; }
   if (penPts) { penMove(e); return; }
   if (erasing) { eraseAt(e); return; }
+  if (state.marquee) { const q = toSvgPoint(e); state.marquee.x1 = q.x; state.marquee.y1 = q.y; draw(); return; }
   if (!drag) return;
   const p = toSvgPoint(e);
-  let x = p.x + drag.dx, y = p.y + drag.dy;
-  if (state.snap) { x = Math.round(x / 10) * 10; y = Math.round(y / 10) * 10; }
-  if (x !== drag.b.x || y !== drag.b.y) { drag.b.x = x; drag.b.y = y; drag.moved = true; draw(); }
+  let moved = false;
+  for (const it of drag.items) {
+    let x = p.x + it.dx, y = p.y + it.dy;
+    if (state.snap) { x = Math.round(x / 10) * 10; y = Math.round(y / 10) * 10; }
+    if (x !== it.b.x || y !== it.b.y) { it.b.x = x; it.b.y = y; moved = true; }
+  }
+  if (moved) { drag.moved = true; draw(); }
 });
 
 function endDrag() {
   if (panning) { panning = null; canvas.classList.remove('is-panning'); return; }
   if (penPts) { penEnd(); return; }
   if (erasing) { eraseEnd(); return; }
+  if (state.marquee) { endMarquee(); return; }
   if (!drag) return;
-  const moved = drag.moved;
+  const moved = drag.moved, count = drag.items.length;
   drag = null;
   canvas.classList.remove('dragging');
-  if (moved) { commit(); renderInspector(); }
+  if (moved) { commit(null, count > 1 ? `Moved ${count} parts` : 'Moved'); renderInspector(); }
+}
+function endMarquee() {
+  const m = state.marquee;
+  state.marquee = null;
+  const x0 = Math.min(m.x0, m.x1), x1 = Math.max(m.x0, m.x1), y0 = Math.min(m.y0, m.y1), y1 = Math.max(m.y0, m.y1);
+  if (x1 - x0 < 4 && y1 - y0 < 4) { draw(); return; }
+  const hits = blocks().filter((b) => {
+    if (!b.visible || b.locked) return false;
+    const bb = bboxOf(b);
+    return bb && bb.x < x1 && bb.x + bb.width > x0 && bb.y < y1 && bb.y + bb.height > y0;
+  });
+  if (m.add) hits.unshift(...groupBlocks().filter((b) => !hits.includes(b)));
+  selectMany(hits);
+  if (hits.length) announce(hits.length === 1 ? `Selected ${hits[0].name}.` : `Selected ${hits.length} parts.`);
 }
 canvas.addEventListener('pointerup', endDrag);
 canvas.addEventListener('pointercancel', endDrag);
@@ -751,7 +900,34 @@ document.addEventListener('keydown', (e) => {
   if (key === ',' || key === '<') { e.preventDefault(); cycleSelection(-1); return; }
   if (key === '.' || key === '>') { e.preventDefault(); cycleSelection(1); return; }
   if (!mod && key.toLowerCase() === 'g') { state.guides = !state.guides; $('#opt-guides').checked = state.guides; draw(); return; }
+  if (mod && key.toLowerCase() === 'a') { e.preventDefault(); selectMany(blocks().filter((x) => x.visible && !x.locked)); announce(`Selected all ${groupBlocks().length} parts.`); return; }
   if (!b) return;
+  const group = groupBlocks();
+  if (group.length > 1) {
+    if (mod && key.toLowerCase() === 'd') {
+      e.preventDefault();
+      const copies = group.map((x) => ({ ...clone(x), id: uid(), name: `${x.name} copy`, x: x.x + 24, y: x.y + 24 }));
+      blocks().push(...copies); refreshAll(); selectMany(copies); commit(`Duplicated ${copies.length} parts.`);
+      return;
+    }
+    if (key === 'Delete' || key === 'Backspace') {
+      e.preventDefault();
+      const ids = new Set(group.map((x) => x.id));
+      state.scene.blocks = blocks().filter((x) => !ids.has(x.id));
+      blocks().forEach((o) => { if (ids.has(o.clipTo)) o.clipTo = ''; });
+      select(null); refreshAll(); commit(`Deleted ${ids.size} parts. Undo brings them back.`);
+      return;
+    }
+    if (mod || e.altKey) return;
+    const step = e.shiftKey ? 10 : 1;
+    const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (moves[key]) {
+      e.preventDefault();
+      group.filter((x) => !x.locked).forEach((x) => { x.x += moves[key][0]; x.y += moves[key][1]; });
+      draw(); commitSoon(); updateHistoryButtons();
+    }
+    return;
+  }
 
   if (mod && key.toLowerCase() === 'd') { e.preventDefault(); duplicate(b); return; }
   if (mod || e.altKey) return;
@@ -788,8 +964,9 @@ function download(blob, filename) {
 
 const fileBase = () => 'artful-drawing-' + new Date().toISOString().slice(0, 10);
 
-async function exportPNG(scale = 2) {
-  const svg = renderSceneSVG(state.scene, { prefix: 'x-' });
+async function exportPNG(scale = 2, transparent = false) {
+  const scene = transparent ? { ...state.scene, background: { mode: 'solid', c1: 'none', c2: 'none', angle: 90 } } : state.scene;
+  const svg = renderSceneSVG(scene, { prefix: 'x-' });
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
   try {
     const img = new Image();
@@ -797,7 +974,7 @@ async function exportPNG(scale = 2) {
     const c = document.createElement('canvas');
     c.width = W() * scale; c.height = H() * scale;
     c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    c.toBlob((blob) => { download(blob, fileBase() + '.png'); announce('Picture downloaded.'); }, 'image/png');
+    c.toBlob((blob) => { download(blob, fileBase() + (transparent ? '-sticker' : '') + '.png'); announce(transparent ? 'Sticker downloaded: a PNG with a see-through background.' : 'Picture downloaded.'); }, 'image/png');
   } catch {
     announce('The PNG could not be made in this browser. Try Download vector (SVG) instead.');
   } finally {
@@ -877,6 +1054,7 @@ function wire() {
     if (!act) return;
     menu.open = false;
     if (act === 'png') exportPNG();
+    if (act === 'sticker') exportPNG(2, true);
     if (act === 'keep') keepDrawing();
     if (act === 'svg') exportSVG();
     if (act === 'video') exportVideo();
@@ -1355,6 +1533,14 @@ function wireCreative() {
   $('#pen-fill').addEventListener('change', (e) => { state.pen.fillLoops = e.target.checked; });
   $('#eraser-scope').addEventListener('change', (e) => { state.eraser.scope = e.target.value; });
   setTool('select', true);
+  const hsel = $('#harmony');
+  hsel.replaceChildren(...HARMONIES.map(([k, label]) => h('option', { value: k }, label)));
+  $('#btn-harmony').addEventListener('click', () => {
+    const next = harmonize(state.scene, state.pen.color, hsel.value);
+    state.scene.background = next.background; state.scene.blocks = next.blocks;
+    refreshAll();
+    commit(`Recolored everything around ${state.pen.color}, keeping its lights and darks. Undo to go back.`);
+  });
   $('#zoom-in').addEventListener('click', () => zoomStep(1.25));
   $('#zoom-out').addEventListener('click', () => zoomStep(0.8));
   $('#zoom-level').addEventListener('click', () => setZoom(1));
