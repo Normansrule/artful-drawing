@@ -75,6 +75,28 @@ or build anything from simple shapes.<br>
 </tr>
 </table>
 
+## 💡 The Helper: a friendly art teacher
+
+<img src="docs/media/helper.gif" alt="The Helper tab suggesting fixes for a rough ghost drawing: making the face cuter, matching two stars, adding a background and fixing contrast, one click each" width="100%">
+
+Open the **Helper** tab while you draw. It looks at your drawing the way an art teacher would, explains each idea in one sentence, and offers a **one-click fix** you can preview by hovering. Every fix is a normal step you can undo, and the Helper never adds anything you didn't draw.
+
+| The Helper notices… | …and offers to | The art idea behind it |
+|---|---|---|
+| The drawing is tiny on the page | Make it bigger | A confident subject fills about half the canvas |
+| It's *almost* centered | Center it exactly | Near-misses look like accidents |
+| Parts just touch the edge | Add a margin | Negative space lets a picture breathe |
+| The main part blends into the background | Darken or lighten the background | Value contrast matters more than hue |
+| Too many unrelated colors | Harmonize colors | A few related colors look designed |
+| Outlines of very different weights | Match them | One line weight means one style |
+| Parts a few pixels from lining up | Line them up | Alignment reads as intention |
+| Left and right parts that almost mirror | Make them match | Faces, wings and ears read best when symmetric |
+| A face set high, or with small eyes, on a round body | Make it cuter | The "baby schema": big eyes, set low |
+| A plain white page | Add a soft background tinted from your colors | A background frames and finishes the picture |
+| Parts completely off the page | Bring them back | Nobody can see them |
+
+It also tells you **what's working** (strong contrast, a tidy palette, nice symmetry, good centering), and every tip links to the matching lesson on the Learn page.
+
 ## 🎨 Change your mind as often as you like
 
 <table>
@@ -193,6 +215,7 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Tool bar** | Select (`V`), Pen (`P`), Eraser (`E`), Color picker (`I`) and Fill (`K`) down the left of the canvas, with each tool's options in a bar on top, like a professional paint program |
 | **Effects** | Glow, sticker edge, drop shadow, long shadow and soft focus on any part |
 | **Zoom** | Pinch, `Ctrl`+scroll or the − 100% + buttons; `Space`+drag to pan; `Ctrl+0` to fit |
+| **Helper** | Friendly tips with one-click fixes and hover previews, based on composition, contrast, color and cuteness |
 | **Recolor all** | One color plus a harmony recolors the whole drawing, keeping lights and darks |
 | **History** | A named list of every step; click one to jump back or forward |
 | **Select several** | Box-select, `Shift`+click or `Ctrl+A`; move, duplicate, delete and align together |
@@ -387,6 +410,7 @@ js/
   recipes.js     the seven draw-along guides
   coloring.js    coloring pages and the paint bucket
   assist.js      drawing helpers: steady hand, pressure, shape snapping
+  critique.js    the Helper: tips and one-click fixes
   model.js       the drawing format and repair of broken files
   render.js      drawing → SVG (pure functions, also used by the tests)
   bloom.js       the bloom timeline and video export
@@ -407,7 +431,7 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-21 tests cover the following, and GitHub Actions runs them on every push:
+23 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
@@ -420,6 +444,7 @@ npm test    # Node.js 18 or newer, nothing to install
 - every layer effect on shapes, lines and pen strokes
 - color harmonies (every picture, every harmony, and no light or dark ever moves)
 - every canvas shape (the drawing stays centered and the size survives saving)
+- the Helper (every tip on every picture draws cleanly, and each fix actually solves the problem it points out)
 - repair of broken project files
 - share links that round-trip exactly
 - the bloom timeline

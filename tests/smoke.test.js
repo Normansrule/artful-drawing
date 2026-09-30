@@ -276,3 +276,30 @@ test('every canvas shape keeps the drawing centered and survives saving', () => 
   }
   assert.equal(normalizeScene({ width: 99999, height: -5 }).width, 2400);
 });
+
+import { critique } from '../js/critique.js';
+
+test('the Helper gives tips on every picture, and every fix draws cleanly', () => {
+  for (const t of TEMPLATES) {
+    const s = normalizeScene(t.build());
+    for (const tip of critique(s)) {
+      assert.ok(tip.title && tip.why, `${t.id}: every tip needs a title and a reason`);
+      if (tip.fix) clean(renderSceneSVG(normalizeScene(tip.fix(s))), `${t.id} fix ${tip.id}`);
+    }
+  }
+  assert.equal(critique(blankScene())[0].id, 'empty');
+});
+
+test('each Helper fix actually solves the problem it points out', () => {
+  const ids = (s) => critique(s).filter((t) => t.kind === 'tip').map((t) => t.id);
+  const solve = (s, id) => { const tip = critique(s).find((t) => t.id === id); assert.ok(tip, `expected the "${id}" tip`); const next = normalizeScene(tip.fix(s)); assert.ok(!ids(next).includes(id), `"${id}" should be gone after its fix`); return next; };
+  solve(scene([makeBlock('heart', { x: 420, y: 400, w: 90, h: 80 })]), 'small');
+  solve(scene([makeBlock('circle', { x: 430, y: 420, w: 400, h: 400 })]), 'nearly-centered');
+  solve(scene([makeBlock('circle', { w: 400, h: 400, fill: '#fafafa' })]), 'contrast');
+  solve(scene([makeBlock('circle', { x: 250, y: 300, w: 200, h: 200 }), makeBlock('rect', { x: 253, y: 560, w: 200, h: 200 })]), 'align');
+  solve(scene([makeBlock('circle', { x: 250, y: 300, w: 150, h: 150 }), makeBlock('circle', { x: 562, y: 309, w: 150, h: 150 })]), 'mirror');
+  const face = makeBlock('face', { y: 300, w: 120, h: 80, eyes: 0.6 });
+  solve(scene([makeBlock('circle', { w: 420, h: 420, fill: '#b9b1ff' }), face]), `cute-${face.id}`);
+  const plain = scene([makeBlock('circle', { w: 300, h: 300 }), makeBlock('star', { x: 300 }), makeBlock('heart', { x: 500 })]);
+  solve(plain, 'background');
+});

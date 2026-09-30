@@ -10,6 +10,7 @@ import { spotlight, reducedMotion } from './fx.js';
 import { RECIPES, getRecipe } from './recipes.js';
 import { toColoringPage, paintBlock, harmonize, HARMONIES } from './coloring.js';
 import { makeStabilizer, speedPressure, recognizeShape } from './assist.js';
+import { critique } from './critique.js';
 import { TEMPLATES, getTemplate } from './templates.js';
 import { PALETTES } from './color.js';
 import { encodeScene, decodeScene } from './share.js';
@@ -130,6 +131,58 @@ function updateHistoryButtons() {
   $('#btn-undo').disabled = !undoStack.length && !commitTimer;
   $('#btn-redo').disabled = !redoStack.length;
   renderHistory();
+  helperSoon();
+}
+
+// ---------- the Helper: friendly tips with one-click fixes ----------
+let helperTimer = 0;
+function helperSoon() { clearTimeout(helperTimer); helperTimer = setTimeout(renderHelper, 350); }
+function measuredBoxes() {
+  const m = new Map();
+  for (const b of blocks()) { const bb = b.visible ? bboxOf(b) : null; if (bb) m.set(b.id, { x: bb.x, y: bb.y, width: bb.width, height: bb.height }); }
+  return m;
+}
+function renderHelper() {
+  const panel = $('#panel-helper');
+  if (!panel || state.stopBloom || penPts) return;
+  const boxes = measuredBoxes();
+  const all = critique(state.scene, boxes);
+  const tips = all.filter((t) => t.kind === 'tip'), good = all.filter((t) => t.kind === 'good');
+  const badge = $('#helper-badge');
+  badge.textContent = tips.length; badge.hidden = !tips.length;
+  if (panel.hidden) return;
+  const preview = (tip) => {
+    try { canvas.innerHTML = renderSceneInner(normalizeScene(tip.fix(state.scene, boxes)), { prefix: 'pv-' }); } catch { draw(); }
+  };
+  panel.replaceChildren(
+    h('div', { class: 'helper-head' },
+      h('h2', {}, tips.length ? 'A few ideas' : 'Looking good!'),
+      h('p', { class: 'note' }, tips.length
+        ? 'Like an art teacher looking over your shoulder. Hover a fix to preview it; every fix is one step you can undo. You stay the artist.'
+        : 'No suggestions right now. Keep drawing: the Helper checks again after every change.')),
+    ...tips.map((t) => h('article', { class: 'tip-card' },
+      h('h3', {}, h('span', { class: 'tip-icon', 'aria-hidden': 'true' }, '💡'), t.title),
+      h('p', {}, t.why),
+      h('div', { class: 'tip-actions' },
+        t.fix ? h('button', {
+          type: 'button', class: 'btn btn-primary btn-small',
+          onpointerenter: () => preview(t), onfocus: () => preview(t), onpointerleave: () => draw(), onblur: () => draw(),
+          onclick: () => {
+            const next = normalizeScene(t.fix(state.scene, boxes));
+            state.scene.background = next.background; state.scene.blocks = next.blocks;
+            refreshAll();
+            commit(`Helper: ${t.fixLabel}. Undo if you liked it better before.`, `Helper: ${t.fixLabel}`);
+          },
+        }, `✨ ${t.fixLabel || 'Fix it'}`) : null,
+        t.ids?.length ? h('button', { type: 'button', class: 'btn btn-small', onclick: () => {
+          selectMany(blocks().filter((b) => t.ids.includes(b.id)));
+          canvas.classList.remove('snapped'); void canvas.getBoundingClientRect(); canvas.classList.add('snapped');
+        } }, 'Show me') : null,
+        t.learn ? h('a', { class: 'tip-learn', href: t.learn, target: '_blank', rel: 'noopener' }, 'Why?') : null,
+      ))),
+    good.length ? h('section', { class: 'helper-good' }, h('h3', {}, 'What’s working'),
+      h('ul', {}, ...good.map((g) => h('li', {}, h('strong', {}, g.title), ' ', g.why)))) : null,
+  );
 }
 
 /** The History panel: every step you took; click one to go back (or forward) to it. */
@@ -507,7 +560,7 @@ function renderShelf() {
 
 let showTab = () => {};
 function setupTabs() {
-  const tabs = [$('#tab-blocks'), $('#tab-guide'), $('#tab-templates')];
+  const tabs = [$('#tab-blocks'), $('#tab-guide'), $('#tab-templates'), $('#tab-helper')];
   const show = (tab) => {
     tabs.forEach((t) => {
       const on = t === tab;
@@ -515,6 +568,7 @@ function setupTabs() {
       t.tabIndex = on ? 0 : -1;
       $('#' + t.getAttribute('aria-controls')).hidden = !on;
     });
+    if (tab.id === 'tab-helper') renderHelper();
   };
   showTab = (id) => show($('#' + id));
   tabs.forEach((t, i) => {

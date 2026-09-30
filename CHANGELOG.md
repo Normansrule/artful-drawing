@@ -2,6 +2,10 @@
 
 All notable changes to artful drawing. Each version is one release zip.
 
+## 1.8.0
+- **The Helper:** a new studio tab that critiques your drawing like a friendly art teacher, with one-click fixes you can preview by hovering: make it bigger, center it, add a margin, fix contrast, harmonize colors, match outlines, line things up, match mirrored parts, make faces cuter, add a background, bring back lost parts. It also points out what's working, and links each tip to its lesson.
+- A badge on the Helper tab shows how many ideas it has, updated after every change.
+
 ## 1.7.0
 - **Recolor all:** one color plus a harmony (analogous, complementary, triadic, split, monochrome) recolors the whole drawing while keeping every light and dark.
 - **History panel:** a named list of every step; click to jump back or forward.
