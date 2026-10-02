@@ -83,6 +83,7 @@ export function normalizeScene(input) {
       seen.add(nb.id);
       for (const k of ['fill', 'fill2', 'stroke']) if (!isHex(nb[k])) nb[k] = COMMON[k];
       if (!EFFECTS.some(([id]) => id === nb.effect)) nb.effect = 'none';
+      if (nb.type === 'text') nb.text = typeof nb.text === 'string' ? nb.text.slice(0, 200) : 'Hello!';
       if (nb.type === 'stroke') {
         const pts = Array.isArray(nb.points) ? nb.points.filter((q) => Array.isArray(q) && Number.isFinite(q[0]) && Number.isFinite(q[1])) : [];
         nb.points = pts.length >= 2 ? pts.slice(0, 600) : clone(SHAPES.stroke.defaults.points);

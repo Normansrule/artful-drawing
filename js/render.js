@@ -46,7 +46,7 @@ function renderBlock(b, scene, pfx, defs, reveal, bi) {
     const target = scene.blocks.find((x) => x.id === b.clipTo);
     if (target) {
       const cid = `${pfx}clip-${b.id}`;
-      const tparts = blockParts(target).filter((p) => p.kind !== 'line');
+      const tparts = blockParts(target).filter((p) => p.kind !== 'line' && p.d);
       const tbt = baseTransform(target);
       const paths = expandRepeats(target, scene)
         .map((c) => tparts.map((p) => `<path transform="${c.t ? c.t + ' ' : ''}${tbt}" d="${p.d}"/>`).join(''))
@@ -81,6 +81,14 @@ function renderBlock(b, scene, pfx, defs, reveal, bi) {
     out += `<g transform="${c.t ? c.t + ' ' : ''}${bt}${t !== 1 ? ` scale(${r2(Math.max(0.001, t))})` : ''}"${o < 1 ? ` opacity="${r2(o)}"` : ''}>`;
     for (const p of parts) {
       const op = p.opacity != null ? ` opacity="${p.opacity}"` : '';
+      if (p.kind === 'text') {
+        const s = b.strokeWidth > 0 ? ` stroke="${stroke}" stroke-width="${r2(b.strokeWidth * 2)}" stroke-linejoin="round" paint-order="stroke"` : '';
+        const n = p.lines.length, lh = p.size / 0.78;
+        const fit = p.fit ? ` textLength="${r2(p.fit)}" lengthAdjust="spacingAndGlyphs"` : '';
+        out += `<text text-anchor="middle" dominant-baseline="central" font-family="${esc(p.font)}" font-weight="${p.weight}" font-style="${p.style}" font-size="${r2(p.size)}" letter-spacing="${r2(p.spacing)}" fill="${fill === 'none' ? 'none' : fill}"${s}${op}>` +
+          p.lines.map((line, k) => `<tspan x="0" y="${r2((k - (n - 1) / 2) * lh)}"${fit}>${esc(line) || ' '}</tspan>`).join('') + '</text>';
+        continue;
+      }
       if (p.kind === 'line') {
         const w = r2(b.strokeWidth * (p.sw ?? 1));
         if (w <= 0) continue;

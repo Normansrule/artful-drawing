@@ -16,7 +16,7 @@ const scene = (blocks, extra = {}) => ({ ...blankScene(), ...extra, blocks });
 const clean = (svg, label) => {
   assert.ok(svg.startsWith('<svg'), `${label}: not an SVG`);
   assert.doesNotMatch(svg, /NaN|undefined|Infinity/, `${label}: bad number in output`);
-  assert.ok(svg.includes('<path'), `${label}: nothing drawn`);
+  assert.ok(svg.includes('<path') || svg.includes('<text'), `${label}: nothing drawn`);
 };
 
 test('every block type draws with its defaults', () => {
@@ -302,4 +302,21 @@ test('each Helper fix actually solves the problem it points out', () => {
   solve(scene([makeBlock('circle', { w: 420, h: 420, fill: '#b9b1ff' }), face]), `cute-${face.id}`);
   const plain = scene([makeBlock('circle', { w: 300, h: 300 }), makeBlock('star', { x: 300 }), makeBlock('heart', { x: 500 })]);
   solve(plain, 'background');
+});
+
+test('text draws every lettering style, on several lines, with repeats and effects', async () => {
+  const { FONTS } = await import('../js/shapes.js');
+  for (const f of FONTS) {
+    for (const fit of [false, true]) {
+      const t = makeBlock('text', { font: f.id, fit, text: 'Happy\nBirthday <3 & "you"', effect: 'sticker', repeats: [makeRepeat('radial', { count: 3 })] });
+      const svg = renderSceneSVG(scene([makeBlock('circle'), t]));
+      clean(svg, `text ${f.id}`);
+      assert.match(svg, /<tspan[^>]*>Happy<\/tspan>/);
+      assert.match(svg, /Birthday &lt;3 &amp; &quot;you&quot;/);
+    }
+  }
+  const odd = normalizeScene({ blocks: [{ type: 'text', text: 42 }, { type: 'text', text: 'x'.repeat(999) }] });
+  assert.equal(odd.blocks[0].text, 'Hello!');
+  assert.equal(odd.blocks[1].text.length, 200);
+  clean(renderSceneSVG(toColoringPage(scene([makeBlock('circle'), makeBlock('text')]))), 'text coloring page');
 });

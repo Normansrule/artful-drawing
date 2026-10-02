@@ -2,6 +2,10 @@
 
 All notable changes to artful drawing. Each version is one release zip.
 
+## 1.9.0
+- **Text:** a new block with six lettering styles, several lines, sticker outlines and stretch-to-fit. Repeats, effects, coloring pages and the Helper all work with it.
+- **Smart guides:** while dragging, parts snap to each other's edges and middles and to the page center, with pink guide lines. Hold `Alt` to move freely.
+
 ## 1.8.0
 - **The Helper:** a new studio tab that critiques your drawing like a friendly art teacher, with one-click fixes you can preview by hovering: make it bigger, center it, add a margin, fix contrast, harmonize colors, match outlines, line things up, match mirrored parts, make faces cuter, add a background, bring back lost parts. It also points out what's working, and links each tip to its lesson.
 - A badge on the Helper tab shows how many ideas it has, updated after every change.

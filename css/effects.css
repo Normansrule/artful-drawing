@@ -286,3 +286,6 @@
 .helper-good h3 { margin: 0 0 0.3rem; font-size: 0.95rem; color: var(--teal); }
 .helper-good ul { margin: 0; padding-left: 1.1rem; font-size: 0.85rem; color: var(--ink-2); }
 .tabs { flex-wrap: wrap; }
+
+/* ---------- v1.9: text ---------- */
+.field textarea { width: 100%; min-height: 3.2em; resize: vertical; font: inherit; padding: 0.4rem 0.5rem; border-radius: 8px; border: 1.5px solid var(--line); background: var(--panel-solid, #fff); color: var(--ink); }

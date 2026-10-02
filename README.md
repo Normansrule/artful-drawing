@@ -97,6 +97,23 @@ Open the **Helper** tab while you draw. It looks at your drawing the way an art 
 
 It also tells you **what's working** (strong contrast, a tidy palette, nice symmetry, good centering), and every tip links to the matching lesson on the Learn page.
 
+## 🔤 Words and neat layouts
+
+<table>
+<tr>
+<td width="45%" valign="top"><img src="docs/media/text-guides.gif" alt="Typing 'Fly high!' onto a butterfly picture, switching to rounded lettering with a sticker edge, then dragging it until pink smart guides snap it to the center" width="100%"></td>
+<td width="55%" valign="top">
+
+**Text** turns any drawing into a card, poster or label. Type straight into the settings panel (press Enter for a new line), then pick from six lettering styles: bold poster, rounded, handwritten, storybook serif, clean and typewriter. The outline gives sticker-style lettering, **Stretch to fill** fits the words to the box, and effects and repeats work on text too.
+
+**Smart guides** appear while you drag. Pink lines show when a part's edge or middle lines up with another part or with the center of the page, and it snaps there. Hold `Alt` to drag freely.
+
+Lettering only uses fonts that are already on people's computers, so exported pictures look the same everywhere.
+
+</td>
+</tr>
+</table>
+
 ## 🎨 Change your mind as often as you like
 
 <table>
@@ -146,7 +163,7 @@ Press **P** and draw. Every line is mirrored or spun up to 12 ways. Close a loop
 
 <img src="docs/media/bloom.gif" alt="A butterfly, a snowflake and a ghost each assembling themselves from simple shapes" width="100%">
 
-Stack **29 shapes**, then add a rule: mirror, spin, step, grid, scatter or spiral. Press **Bloom** to watch any picture build itself, and save it as a video.
+Stack **31 shapes**, then add a rule: mirror, spin, step, grid, scatter or spiral. Press **Bloom** to watch any picture build itself, and save it as a video.
 
 </td>
 </tr>
@@ -215,6 +232,8 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Tool bar** | Select (`V`), Pen (`P`), Eraser (`E`), Color picker (`I`) and Fill (`K`) down the left of the canvas, with each tool's options in a bar on top, like a professional paint program |
 | **Effects** | Glow, sticker edge, drop shadow, long shadow and soft focus on any part |
 | **Zoom** | Pinch, `Ctrl`+scroll or the − 100% + buttons; `Space`+drag to pan; `Ctrl+0` to fit |
+| **Text** | Six lettering styles, several lines, sticker outlines, stretch to fit; repeats and effects work too |
+| **Smart guides** | Pink lines while dragging; parts snap to each other's edges and middles and to the page center (`Alt` to drag freely) |
 | **Helper** | Friendly tips with one-click fixes and hover previews, based on composition, contrast, color and cuteness |
 | **Recolor all** | One color plus a harmony recolors the whole drawing, keeping lights and darks |
 | **History** | A named list of every step; click one to jump back or forward |
@@ -232,7 +251,7 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Shapes** | Circle, box, triangle, polygon, star, heart, petal, drop, egg, moon, ring, wing, ghost, blob, cloud |
 | **Lines** | Straight, curve, arc, wave, zigzag, spiral, and your own pen strokes |
 | **Living algorithms** | Fractal tree, snowflake arm, Koch snowflake, Sierpinski triangle, sunflower seed spiral, sunburst, pattern filler |
-| **Characters** | A cute face with six expressions: drop it on any shape to bring it to life |
+| **Characters** | A cute face with six expressions, and Text for words |
 | **Draw along** | Seven guided drawings: butterfly, ghost, Christmas tree, snowflake, Easter eggs, flower, kitty |
 | **Bloom** (`B`) | Watch a picture assemble itself, then download it as a video |
 
@@ -431,7 +450,7 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-23 tests cover the following, and GitHub Actions runs them on every push:
+24 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
@@ -444,6 +463,7 @@ npm test    # Node.js 18 or newer, nothing to install
 - every layer effect on shapes, lines and pen strokes
 - color harmonies (every picture, every harmony, and no light or dark ever moves)
 - every canvas shape (the drawing stays centered and the size survives saving)
+- text in every lettering style, including awkward characters like `<`, `&` and quotes
 - the Helper (every tip on every picture draws cleanly, and each fix actually solves the problem it points out)
 - repair of broken project files
 - share links that round-trip exactly

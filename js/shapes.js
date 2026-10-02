@@ -16,6 +16,16 @@
 
 import { r2, rng } from './util.js';
 
+/** Lettering styles. Only fonts already on people's computers, so exports look the same everywhere. */
+export const FONTS = [
+  { id: 'bold', label: 'Bold poster', stack: "'Arial Black', 'Helvetica Neue', Arial, sans-serif", weight: 900 },
+  { id: 'rounded', label: 'Rounded and friendly', stack: "'Arial Rounded MT Bold', 'Nunito', 'Trebuchet MS', 'Segoe UI', sans-serif", weight: 700 },
+  { id: 'hand', label: 'Handwritten', stack: "'Comic Sans MS', 'Chalkboard SE', 'Segoe Print', 'Bradley Hand', cursive", weight: 700 },
+  { id: 'serif', label: 'Storybook serif', stack: "Georgia, 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif", weight: 700, style: 'italic' },
+  { id: 'clean', label: 'Clean and simple', stack: "'Helvetica Neue', 'Segoe UI', Arial, sans-serif", weight: 500 },
+  { id: 'mono', label: 'Typewriter', stack: "'Courier New', Courier, monospace", weight: 700 },
+];
+
 export const BRUSHES = [
   { id: 'ink', label: 'Ink (even line)' },
   { id: 'brush', label: 'Brush (thick and thin)' },
@@ -634,6 +644,24 @@ export const SHAPES = {
   },
 
   // ===== Characters =====
+  text: {
+    label: 'Text', category: 'Characters',
+    blurb: 'Words for cards, posters and labels. Outline makes sticker-style lettering; repeats work too.',
+    defaults: { w: 380, h: 110, text: 'Hello!', font: 'bold', spacing: 0.02, fit: false, fill: '#ff4f87', stroke: '#221f4f', strokeWidth: 6 },
+    params: [
+      { key: 'text', label: 'Words (Enter for a new line)', type: 'text', multiline: true },
+      select('font', 'Lettering', FONTS.map((f) => [f.id, f.label])),
+      range('spacing', 'Letter spacing', -0.05, 0.4, 0.01),
+      toggle('fit', 'Stretch to fill the box'),
+    ],
+    parts: (p) => {
+      const f = FONTS.find((x) => x.id === p.font) || FONTS[0];
+      const lines = String(p.text ?? '').slice(0, 200).split('\n').slice(0, 6);
+      const size = (p.h / lines.length) * 0.78;
+      return [{ kind: 'text', lines, font: f.stack, weight: f.weight, style: f.style || 'normal', size, spacing: p.spacing * size, fit: p.fit ? p.w * 0.96 : 0 }];
+    },
+  },
+
   face: {
     label: 'Cute face', category: 'Characters',
     blurb: 'Eyes, mouth and rosy cheeks. Drop it on any shape to bring it to life.',

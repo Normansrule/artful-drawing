@@ -324,6 +324,10 @@ function drawOverlay() {
     const bb = bboxOf(gb);
     if (bb) o += `<rect x="${bb.x - 6}" y="${bb.y - 6}" width="${bb.width + 12}" height="${bb.height + 12}" fill="none" stroke="#8b6bff" stroke-width="2" stroke-dasharray="4 4" ${ns}/>`;
   }
+  for (const l of state.smartLines || []) {
+    o += `<line x1="${r1(l[0])}" y1="${r1(l[1])}" x2="${r1(l[2])}" y2="${r1(l[3])}" stroke="#ff2d95" stroke-width="1.5" ${ns}/>` +
+      `<circle cx="${r1(l[0])}" cy="${r1(l[1])}" r="3" fill="#ff2d95" ${ns}/><circle cx="${r1(l[2])}" cy="${r1(l[3])}" r="3" fill="#ff2d95" ${ns}/>`;
+  }
   if (state.marquee) {
     const m = state.marquee, x = Math.min(m.x0, m.x1), y = Math.min(m.y0, m.y1);
     o += `<rect x="${x}" y="${y}" width="${Math.abs(m.x1 - m.x0)}" height="${Math.abs(m.y1 - m.y0)}" fill="rgba(139,107,255,0.12)" stroke="#8b6bff" stroke-width="1.5" stroke-dasharray="5 4" ${ns}/>`;
@@ -500,6 +504,7 @@ const TILE_TWEAKS = {
   crystal: { w: 40, h: 90, repeats: [{ mode: 'radial', count: 6, around: 'self' }] },
   tree: { depth: 7, leaf: 0 },
   sunflower: { count: 120 },
+  text: { text: 'Aa', strokeWidth: 4, w: 200, h: 150 },
 };
 
 function tileSVG(type) {
@@ -614,7 +619,10 @@ function control(target, spec, opts = {}) {
     return h('div', { class: 'field' }, h('label', { for: id }, spec.label), h('div', { class: 'color-row' }, inp, code));
   }
   if (spec.type === 'text') {
-    const inp = h('input', { type: 'text', id, value: target[spec.key], oninput: () => { target[spec.key] = inp.value; renderLayers(); }, onchange: () => commit() });
+    const inp = spec.multiline
+      ? h('textarea', { id, rows: 2, oninput: () => { target[spec.key] = inp.value; draw(); commitSoon(); }, onchange: () => commit('Changed the words.', 'Changed the words') })
+      : h('input', { type: 'text', id, value: target[spec.key], oninput: () => { target[spec.key] = inp.value; renderLayers(); }, onchange: () => commit() });
+    if (spec.multiline) inp.value = target[spec.key] ?? '';
     return h('div', { class: 'field' }, h('label', { for: id }, spec.label), inp);
   }
   if (spec.type === 'seed') {
@@ -850,7 +858,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (!inGroup && state.sel !== b.id) select(b.id);
   if (b.locked) { announce(`${b.name} is locked. Unlock it in Layers to move it.`); return; }
   const items = (inGroup ? groupBlocks() : [b]).filter((x) => !x.locked).map((x) => ({ b: x, dx: x.x - p.x, dy: x.y - p.y }));
-  drag = { b, items, moved: false };
+  drag = { b, items, moved: false, guides: items.length === 1 ? smartTargets(b) : null };
   canvas.setPointerCapture(e.pointerId);
   canvas.classList.add('dragging');
 });
@@ -864,9 +872,11 @@ canvas.addEventListener('pointermove', (e) => {
   if (!drag) return;
   const p = toSvgPoint(e);
   let moved = false;
+  state.smartLines = [];
   for (const it of drag.items) {
     let x = p.x + it.dx, y = p.y + it.dy;
     if (state.snap) { x = Math.round(x / 10) * 10; y = Math.round(y / 10) * 10; }
+    if (drag.guides && !e.altKey) ({ x, y } = smartSnap(drag.guides, x, y));
     if (x !== it.b.x || y !== it.b.y) { it.b.x = x; it.b.y = y; moved = true; }
   }
   if (moved) { drag.moved = true; draw(); }
@@ -880,6 +890,7 @@ function endDrag() {
   if (!drag) return;
   const moved = drag.moved, count = drag.items.length;
   drag = null;
+  if (state.smartLines?.length) { state.smartLines = []; draw(); }
   canvas.classList.remove('dragging');
   if (moved) { commit(null, count > 1 ? `Moved ${count} parts` : 'Moved'); renderInspector(); }
 }
@@ -1278,6 +1289,38 @@ function penEnd() {
     popIn(blocks().length - 1);
     commit(`Snapped into a clean ${snapped.block.name.replace(' (drawn)', '').toLowerCase()}. Undo to keep your own line.`);
   }
+}
+
+// ---------- smart guides: parts snap into line with each other while you drag ----------
+function smartTargets(b) {
+  const bb = bboxOf(b);
+  if (!bb) return null;
+  const xs = [[0, 0, H()], [W() / 2, 0, H()], [W(), 0, H()]], ys = [[0, 0, W()], [H() / 2, 0, W()], [H(), 0, W()]];
+  for (const o of blocks()) {
+    if (o.id === b.id || !o.visible) continue;
+    const ob = bboxOf(o);
+    if (!ob || ob.width > W() * 0.95 || ob.width * ob.height > W() * H() * 0.7) continue; // skip backdrops
+    for (const x of [ob.x, ob.x + ob.width / 2, ob.x + ob.width]) xs.push([x, ob.y, ob.y + ob.height]);
+    for (const y of [ob.y, ob.y + ob.height / 2, ob.y + ob.height]) ys.push([y, ob.x, ob.x + ob.width]);
+  }
+  return { ox: bb.x - b.x, oy: bb.y - b.y, w: bb.width, h: bb.height, xs, ys };
+}
+function smartSnap(g, x, y) {
+  const thr = 7 / state.view.z;
+  const bestOf = (edges, targets) => {
+    let best = null;
+    for (const [e, off] of edges) for (const t of targets) { const d = t[0] - e; if (Math.abs(d) < thr && (!best || Math.abs(d) < Math.abs(best.d))) best = { d, t, off }; }
+    return best;
+  };
+  const left = x + g.ox, top = y + g.oy;
+  const bx = bestOf([[left, 0], [left + g.w / 2, g.w / 2], [left + g.w, g.w]], g.xs);
+  const by = bestOf([[top, 0], [top + g.h / 2, g.h / 2], [top + g.h, g.h]], g.ys);
+  if (bx) x += bx.d;
+  if (by) y += by.d;
+  const L = x + g.ox, T = y + g.oy;
+  if (bx) state.smartLines.push([bx.t[0], Math.min(bx.t[1], T), bx.t[0], Math.max(bx.t[2], T + g.h)]);
+  if (by) state.smartLines.push([Math.min(by.t[1], L), by.t[0], Math.max(by.t[2], L + g.w), by.t[0]]);
+  return { x, y };
 }
 
 // ---------- zoom and pan (view only: exports always use the whole canvas) ----------
