@@ -110,7 +110,24 @@ Open the **Helper** tab while you draw. It looks at your drawing the way an art 
 </tr>
 </table>
 
+Stuck on what to draw? The top of the Helper has **🎲 Need an idea?**: 30 friendly prompts ("A whale in the clouds", "A cactus wearing a sweater"), each with a first step so the blank page is never scary.
+
 It also tells you **what's working** (strong contrast, a tidy palette, nice symmetry, good centering), and every tip links to the matching lesson on the Learn page.
+
+## ✨ Stamps and gradients
+
+<table>
+<tr>
+<td width="40%"><img src="docs/media/stamp-gradient.gif" alt="Dragging the Fill tool down the page to blend a violet gradient sky, then dragging the Stamp tool to scatter a mirrored arc of sparkles and clicking to stamp flowers" width="100%"></td>
+<td width="60%" valign="top">
+
+**Stamp** (`S`): click to stamp, or drag to scatter a trail of stars, sparkles, hearts, dots, flowers, leaves, snowflakes or bubbles. *Variety* changes size and turn, *Rainbow* varies the colors, and the pen's symmetry works too. Each trail is grouped, so it moves as one.
+
+**Gradients with the Fill tool** (`K`): click a part for a solid color, or **drag across it** to blend your color into what's already there, in the direction you drag. Drag on the empty paper to blend the background, for an instant sky or sunset.
+
+</td>
+</tr>
+</table>
 
 ## 🔤 Words and neat layouts
 
@@ -249,6 +266,11 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Zoom** | Pinch, `Ctrl`+scroll or the − 100% + buttons; `Space`+drag to pan; `Ctrl+0` to fit |
 | **Text** | Six lettering styles, several lines, sticker outlines, stretch to fit; repeats and effects work too |
 | **Smart guides** | Pink lines while dragging; parts snap to each other's edges and middles and to the page center (`Alt` to drag freely) |
+| **Stamp** (`S`) | Click or drag to scatter stars, sparkles, hearts, dots, flowers, leaves, snowflakes or bubbles |
+| **Gradient fill** | With Fill, drag across a part (or the paper) to blend a gradient in that direction |
+| **Layers** | Drag layers to reorder them (or `Alt`+`↑`/`↓`); grouped parts show ⛓ |
+| **Touch and stylus** | Two fingers pinch to zoom and pan; once a stylus is used, resting fingers and palms never draw |
+| **Need an idea?** | 30 drawing prompts in the Helper tab, each with a first step |
 | **Groups** | `Ctrl+G` groups selected parts so they always move together; `Ctrl+Shift+G` ungroups, `Alt`+click picks one part |
 | **Add shading** | One click: shadow, highlight and crisp outline, clipped inside and grouped |
 | **Tour** | A one-minute spotlight tour of the studio (welcome screen, or the ? help) |
@@ -310,7 +332,8 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | Key | Action | Key | Action |
 |---|---|---|---|
 | `P` | Pen on or off | `B` | Play the bloom |
-| `K` | Paint bucket | `E` | Eraser |
+| `K` | Paint bucket (drag for a gradient) | `E` | Eraser |
+| `S` | Stamp | | |
 | `V` | Select tool | `Esc` | Back to the Select tool |
 | `I` | Color picker (or `Alt`+click) | `Ctrl` + `=` / `-` / `0` | Zoom in, out, fit |
 | `Space` + drag | Look around when zoomed in | Pinch / `Ctrl`+scroll | Zoom around the pointer |
@@ -469,7 +492,7 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-25 tests cover the following, and GitHub Actions runs them on every push:
+28 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
@@ -482,6 +505,8 @@ npm test    # Node.js 18 or newer, nothing to install
 - every layer effect on shapes, lines and pen strokes
 - color harmonies (every picture, every harmony, and no light or dark ever moves)
 - every canvas shape (the drawing stays centered and the size survives saving)
+- drawing ideas (unique, each with a first step) and layer reordering
+- every stamp (draws cleanly, varies with the seed, counts as your own drawing for the eraser)
 - one-click shading on every round shape (clipped, grouped, never stacking twice)
 - text in every lettering style, including awkward characters like `<`, `&` and quotes
 - the Helper (every tip on every picture draws cleanly, and each fix actually solves the problem it points out)

@@ -79,13 +79,17 @@
               <option value="neon">Neon</option>
               <option value="dots">Dots</option>
             </select></label>
-          <span class="opt" data-for="pen fill">
+          <label class="opt" data-for="stamp" title="What to stamp"><span class="sr-only">Stamp</span><select id="stamp-kind"></select></label>
+          <span class="opt" data-for="pen fill stamp">
             <label title="Color"><span class="sr-only">Color</span><input type="color" id="pen-color" value="#ff4f87"></label>
             <span class="quick-swatches recent" id="recent-swatches" role="group" aria-label="Recent colors" hidden></span>
             <span class="quick-swatches" id="quick-swatches" role="group" aria-label="Quick colors"></span>
           </span>
-          <label class="opt" data-for="pen eraser" title="Size"><span class="opt-label">Size</span><input type="range" id="pen-size" min="2" max="40" value="8"></label>
-          <label class="opt" data-for="pen" title="Symmetry"><span class="sr-only">Symmetry</span>
+          <label class="opt" data-for="pen eraser stamp" title="Size"><span class="opt-label">Size</span><input type="range" id="pen-size" min="2" max="40" value="8"></label>
+          <label class="opt" data-for="stamp" title="How much each stamp varies in size and turn"><span class="opt-label">Variety</span><input type="range" id="stamp-jitter" min="0" max="1" step="0.05" value="0.6"></label>
+          <label class="opt opt-check" data-for="stamp"><input type="checkbox" id="stamp-rainbow" checked> Rainbow</label>
+          <label class="opt opt-check" data-for="stamp"><input type="checkbox" id="stamp-outline"> Outline</label>
+          <label class="opt" data-for="pen stamp" title="Symmetry"><span class="sr-only">Symmetry</span>
             <select id="pen-sym">
               <option value="none">No symmetry</option>
               <option value="mirror" selected>Mirror</option>
@@ -104,7 +108,7 @@
             <label><span class="sr-only">Color harmony</span><select id="harmony"></select></label>
             <button class="btn btn-small" id="btn-harmony" type="button">✨ Recolor all</button>
           </span>
-          <span class="opt" data-for="fill"><span class="opt-hint">Click a part to color it. Click the paper for the background. <kbd>Alt</kbd>+click borrows a color.</span></span>
+          <span class="opt" data-for="fill"><span class="opt-hint">Click a part to color it, or <b>drag across it to blend a gradient</b>. The paper is the background. <kbd>Alt</kbd>+click borrows a color.</span></span>
           <span class="opt" data-for="picker"><span class="opt-hint">Click any part to borrow its color, then you go straight back to your tool.</span></span>
         <div class="trace-bar opt" data-for="pen select" role="group" aria-label="Tracing photo">
           <button class="btn" id="btn-trace" title="Put a photo over the canvas to trace it with the pen"><span aria-hidden="true">📷</span> Trace</button>
@@ -135,6 +139,7 @@
         <button data-tool="select" aria-pressed="true" title="Select and move (V)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.5L10 19z"/></svg><span>Select</span><kbd>V</kbd></button>
         <button data-tool="pen" id="btn-pen" aria-pressed="false" title="Pen: draw freehand (P)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.5-5L16 4.5a2.1 2.1 0 013 3L8.5 18z"/><path d="M14 7l3 3"/></svg><span>Pen</span><kbd>P</kbd></button>
         <button data-tool="eraser" aria-pressed="false" title="Eraser (E)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20h11"/><path d="M4.5 14.5l9-9a2 2 0 012.8 0l3.2 3.2a2 2 0 010 2.8L13 18H8.5z"/></svg><span>Eraser</span><kbd>E</kbd></button>
+        <button data-tool="stamp" aria-pressed="false" title="Stamp: click or drag to scatter shapes (S)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 8.3l5-.7z"/><path d="M5 21h14"/></svg><span>Stamp</span><kbd>S</kbd></button>
         <button data-tool="picker" aria-pressed="false" title="Color picker: borrow a color (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l2-2 1-4 7-7 3 3-7 7-4 1z"/><path d="M14 7l2-2a2.1 2.1 0 013 3l-2 2"/></svg><span>Picker</span><kbd>I</kbd></button>
         <button data-tool="fill" id="btn-bucket" aria-pressed="false" title="Paint bucket (K)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11l7-7 7 7-7 7z"/><path d="M19 15c0 1.5 1 2.5 1 3.5a1 1 0 01-2 0c0-1 1-2 1-3.5z"/></svg><span>Fill</span><kbd>K</kbd></button>
       </nav>
@@ -212,7 +217,8 @@
             <dt><kbd>G</kbd></dt><dd>Show or hide guides</dd>
             <dt><kbd>B</kbd></dt><dd>Play the bloom animation</dd>
             <dt><kbd>P</kbd></dt><dd>Pen on or off (draw freehand)</dd>
-            <dt><kbd>K</kbd></dt><dd>Paint bucket on or off</dd>
+            <dt><kbd>K</kbd></dt><dd>Paint bucket on or off (drag across a part for a gradient)</dd>
+            <dt><kbd>S</kbd></dt><dd>Stamp: click or drag to scatter stars, hearts, flowers and more</dd>
             <dt><kbd>V</kbd> / <kbd>E</kbd> / <kbd>I</kbd></dt><dd>Select tool / Eraser / Color picker</dd>
             <dt><kbd>Ctrl</kbd>+scroll or pinch</dt><dd>Zoom (Ctrl+0 fits the screen)</dd>
             <dt><kbd>Space</kbd>+drag</dt><dd>Look around while zoomed in</dd>

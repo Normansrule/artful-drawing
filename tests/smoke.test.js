@@ -340,3 +340,38 @@ test('one-click shading adds clipped, grouped light and shadow to any round shap
   const g = addGroundShadow(scene([makeBlock('ghost')]), [], { x: 0, y: 0, width: 10, height: 10 });
   assert.equal(g.blocks.length, 1, 'no parts, no shadow');
 });
+
+import { STAMPS, makeStamp } from '../js/stamps.js';
+
+test('every stamp draws cleanly, varies with the seed and respects its options', () => {
+  let s = 7;
+  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (const [kind] of STAMPS) {
+    const a = makeStamp(kind, 300, 300, rnd, { size: 50, color: '#3ee6c1', rainbow: true });
+    const b = makeStamp(kind, 500, 300, rnd, { size: 50, color: '#3ee6c1', jitter: 0 });
+    clean(renderSceneSVG(scene([a, b])), `stamp ${kind}`);
+    assert.equal(b.rot, 0, `${kind}: no variety means no turn`);
+    assert.ok(a.penMade, 'stamps count as your own drawing for the eraser');
+  }
+});
+
+import { PROMPTS, pickPrompt } from '../js/prompts.js';
+import { moveBlock } from '../js/model.js';
+
+test('drawing ideas are unique, each with a first step, and pickPrompt wraps around', () => {
+  assert.ok(PROMPTS.length >= 25);
+  assert.equal(new Set(PROMPTS.map((p) => p[0])).size, PROMPTS.length);
+  for (const [idea, start] of PROMPTS) assert.ok(idea.length > 5 && start.length > 20, idea);
+  assert.deepEqual(pickPrompt(PROMPTS.length + 2), PROMPTS[2]);
+  assert.deepEqual(pickPrompt(-1), PROMPTS[PROMPTS.length - 1]);
+});
+
+test('reordering layers moves exactly one part and keeps everything else in order', () => {
+  const s = scene(['circle', 'star', 'heart', 'egg'].map((t) => makeBlock(t, { name: t })));
+  moveBlock(s, s.blocks[0].id, 3);
+  assert.deepEqual(s.blocks.map((b) => b.name), ['star', 'heart', 'egg', 'circle']);
+  moveBlock(s, s.blocks[3].id, -5);
+  assert.deepEqual(s.blocks.map((b) => b.name), ['circle', 'star', 'heart', 'egg']);
+  moveBlock(s, 'missing', 0);
+  assert.equal(s.blocks.length, 4);
+});

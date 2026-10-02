@@ -2,6 +2,17 @@
 
 All notable changes to artful drawing. Each version is one release zip.
 
+## 2.2.0
+- **Layers:** drag to reorder (or `Alt`+`↑`/`↓` on a layer); grouped parts show ⛓; `Shift`+click a layer adds it to the selection.
+- **Touch and stylus:** two-finger pinch zoom and pan; palm rejection once a stylus is used.
+- **Need an idea?** 30 drawing prompts with a first step, at the top of the Helper.
+- Fixed: middle-click drag now pans when zoomed in.
+
+## 2.1.0
+- **Stamp tool (`S`):** click or drag to scatter eight kinds of stamps, with variety, rainbow colors, outlines and symmetry. Each trail is grouped.
+- **Gradient fill:** with the Fill tool, drag across a part or the paper to blend a gradient in the direction you drag.
+- The tool options bar now stays one row high, so switching tools never shifts the canvas.
+
 ## 2.0.0
 - **Add shading:** one click gives any filled shape a shadow, a highlight and a crisp outline, clipped inside and grouped with it. Available in the Helper and in each shape's settings.
 - **Helper:** two new tips, "Give it some depth" and "Put it on the ground" (a soft shadow under characters).

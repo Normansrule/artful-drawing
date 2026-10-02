@@ -3,7 +3,8 @@
 
 import { SHAPES, CATEGORIES } from './shapes.js';
 import { REPEATERS } from './repeaters.js';
-import { makeBlock, makeRepeat, blankScene, normalizeScene, EFFECTS, CANVAS_SHAPES, resizeCanvas } from './model.js';
+import { makeBlock, makeRepeat, blankScene, normalizeScene, EFFECTS, CANVAS_SHAPES, resizeCanvas, moveBlock } from './model.js';
+import { pickPrompt } from './prompts.js';
 import { renderSceneInner, renderSceneSVG, sceneStats } from './render.js';
 import { playBloom, recordBloom, canRecordVideo } from './bloom.js';
 import { spotlight, reducedMotion } from './fx.js';
@@ -13,6 +14,7 @@ import { makeStabilizer, speedPressure, recognizeShape } from './assist.js';
 import { critique } from './critique.js';
 import { canShade, isShaded, addShading } from './shading.js';
 import { startTour } from './tour.js';
+import { STAMPS, makeStamp } from './stamps.js';
 import { TEMPLATES, getTemplate } from './templates.js';
 import { PALETTES } from './color.js';
 import { encodeScene, decodeScene } from './share.js';
@@ -40,6 +42,7 @@ const state = {
   marquee: null,
   pen: { on: false, sym: 'mirror', color: '#ff4f87', size: 8, brush: 'brush', steady: 0.35, snap: true, fillLoops: true },
   eraser: { on: false, scope: 'mine' },
+  stamp: { kind: 'star', jitter: 0.6, rainbow: true, outline: false },
   penPreview: null,  // the stroke being drawn right now
   guide: null,       // draw-along session
   bucket: false,     // paint-bucket tool
@@ -137,6 +140,16 @@ function updateHistoryButtons() {
 }
 
 // ---------- the Helper: friendly tips with one-click fixes ----------
+let ideaIndex = Math.floor(Math.random() * 1000);
+function ideaCard() {
+  const [idea, start] = pickPrompt(ideaIndex);
+  const card = h('section', { class: 'idea-card', 'aria-live': 'polite' },
+    h('span', { class: 'idea-label' }, '🎲 Need an idea?'),
+    h('strong', {}, idea),
+    h('p', {}, start),
+    h('button', { type: 'button', class: 'btn btn-small', onclick: () => { ideaIndex++; card.replaceWith(ideaCard()); } }, 'Another idea'));
+  return card;
+}
 let helperTimer = 0;
 function helperSoon() { clearTimeout(helperTimer); helperTimer = setTimeout(renderHelper, 350); }
 function measuredBoxes() {
@@ -157,6 +170,7 @@ function renderHelper() {
     try { canvas.innerHTML = renderSceneInner(normalizeScene(tip.fix(state.scene, boxes)), { prefix: 'pv-' }); } catch { draw(); }
   };
   panel.replaceChildren(
+    ideaCard(),
     h('div', { class: 'helper-head' },
       h('h2', {}, tips.length ? 'A few ideas' : 'Looking good!'),
       h('p', { class: 'note' }, tips.length
@@ -848,11 +862,43 @@ function renderLayers() {
   ol.replaceChildren();
   if (!blocks().length) { ol.append(h('li', { class: 'note' }, 'No blocks yet.')); return; }
   [...blocks()].reverse().forEach((b) => {
-    const li = h('li', { class: `layer${b.id === state.sel ? ' is-selected' : ''}${b.visible ? '' : ' is-hidden'}` },
+    const li = h('li', { class: `layer${b.id === state.sel || state.multi.has(b.id) ? ' is-selected' : ''}${b.visible ? '' : ' is-hidden'}`, draggable: 'true', 'data-id': b.id, title: 'Drag to change the order. Alt+Up / Alt+Down also work.' },
+      h('span', { class: 'layer-grip', 'aria-hidden': 'true' }, '⠿'),
       h('button', { type: 'button', class: 'icon-btn', 'aria-label': `${b.visible ? 'Hide' : 'Show'} ${b.name}`, 'aria-pressed': !b.visible, html: b.visible ? ICON_EYE : ICON_EYE_OFF, onclick: () => { b.visible = !b.visible; refreshAll(); commit(); } }),
-      h('button', { type: 'button', class: 'layer-name', 'aria-current': b.id === state.sel ? 'true' : null, onclick: () => select(b.id) }, b.name),
+      h('button', { type: 'button', class: 'layer-name', 'aria-current': b.id === state.sel ? 'true' : null,
+        onclick: (e) => (e.shiftKey ? toggleInGroup(b) : select(b.id)),
+        onkeydown: (e) => {
+          if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+          e.preventDefault(); e.stopPropagation();
+          const i = blocks().indexOf(b);
+          moveBlock(state.scene, b.id, e.key === 'ArrowUp' ? i + 1 : i - 1);
+          refreshAll(); commit(`Moved ${b.name} ${e.key === 'ArrowUp' ? 'up' : 'down'}.`, `Reordered ${b.name}`);
+          $(`#layers [data-id="${CSS.escape(b.id)}"] .layer-name`)?.focus();
+        } }, b.name, b.group ? h('span', { class: 'layer-chain', title: 'Grouped' }, ' ⛓') : null),
       h('button', { type: 'button', class: 'icon-btn', 'aria-label': `${b.locked ? 'Unlock' : 'Lock'} ${b.name}`, 'aria-pressed': b.locked, html: b.locked ? ICON_LOCK : ICON_UNLOCK, onclick: () => { b.locked = !b.locked; refreshAll(); commit(); } }),
     );
+    li.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', b.id); e.dataTransfer.effectAllowed = 'move'; li.classList.add('is-dragging'); });
+    li.addEventListener('dragend', () => li.classList.remove('is-dragging'));
+    li.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const r = li.getBoundingClientRect(), above = e.clientY < r.top + r.height / 2;
+      li.classList.toggle('drop-above', above); li.classList.toggle('drop-below', !above);
+    });
+    li.addEventListener('dragleave', () => li.classList.remove('drop-above', 'drop-below'));
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const above = li.classList.contains('drop-above');
+      li.classList.remove('drop-above', 'drop-below');
+      const id = e.dataTransfer.getData('text/plain');
+      if (!id || id === b.id) return;
+      const moving = blocks().find((x) => x.id === id);
+      const list = blocks();
+      list.splice(list.indexOf(moving), 1);
+      const target = list.indexOf(b);
+      list.splice(above ? target + 1 : target, 0, moving); // the list shows the top first, so "above" means drawn later
+      refreshAll();
+      commit(`Moved ${moving.name} ${above ? 'in front of' : 'behind'} ${b.name}.`, `Reordered ${moving.name}`);
+    });
     ol.append(li);
   });
 }
@@ -867,13 +913,38 @@ function toSvgPoint(e) {
   return { x: p.x, y: p.y };
 }
 
+// ---------- touch: two fingers zoom and pan; with a stylus, fingers never draw (palm rejection) ----------
+const touches = new Map();
+let pinch = null;
+function cancelActive() {
+  if (penPts) { penPts = null; state.penPreview = null; snap = null; clearTimeout(holdTimer); }
+  if (stamping) { const g = stamping.group; state.scene.blocks = blocks().filter((x) => x.group !== g); stamping = null; }
+  if (filling) { if (filling.b) Object.assign(filling.b, filling.before); else Object.assign(state.scene.background, filling.before); filling = null; }
+  if (erasing) erasing = null;
+  if (drag) drag = null;
+  state.marquee = null;
+  draw();
+}
+function pinchState() {
+  const [a, b] = [...touches.values()];
+  return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+}
+
 canvas.addEventListener('pointerdown', (e) => {
-  if (e.button !== 0) return;
+  if (e.pointerType === 'pen') state.sawPen = true;
+  if (e.pointerType === 'touch') {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2) { cancelActive(); pinch = { ...pinchState(), z: state.view.z }; return; }
+    if (touches.size > 2) return;
+    if (state.sawPen) { if (state.view.z > 1) panStart(e); return; } // stylus in use: a resting palm or finger never draws
+  }
   if (state.stopBloom) { stopBloom(); draw(); }
   if (e.button === 1 || state.spaceDown) { panStart(e); return; }
+  if (e.button !== 0) return;
   if (state.tool === 'picker' || (e.altKey && (state.tool === 'pen' || state.tool === 'fill'))) { pickAt(e); return; }
   if (state.pen.on) { penStart(e); return; }
-  if (state.bucket) { bucketAt(e); return; }
+  if (state.bucket) { fillStart(e); return; }
+  if (state.tool === 'stamp') { stampStart(e); return; }
   if (state.eraser.on) { eraseStart(e); return; }
   const g = e.target.closest('[data-block]');
   const p = toSvgPoint(e);
@@ -901,10 +972,23 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointermove', (e) => {
+  if (touches.has(e.pointerId)) {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && touches.size === 2) {
+      const now = pinchState(), r = canvas.getBoundingClientRect(), k = (W() / state.view.z) / r.width;
+      panBy(-(now.mx - pinch.mx) * k, -(now.my - pinch.my) * k);
+      const p = toSvgPoint({ clientX: now.mx, clientY: now.my });
+      setZoom(pinch.z * (now.d / pinch.d), p.x, p.y);
+      pinch.mx = now.mx; pinch.my = now.my;
+      return;
+    }
+  }
   moveBrushCursor(e);
   if (panning) { panMove(e); return; }
   if (penPts) { penMove(e); return; }
   if (erasing) { eraseAt(e); return; }
+  if (stamping) { stampMove(e); return; }
+  if (filling) { fillMove(e); return; }
   if (state.marquee) { const q = toSvgPoint(e); state.marquee.x1 = q.x; state.marquee.y1 = q.y; draw(); return; }
   if (!drag) return;
   const p = toSvgPoint(e);
@@ -919,10 +1003,20 @@ canvas.addEventListener('pointermove', (e) => {
   if (moved) { drag.moved = true; draw(); }
 });
 
+function endTouch(e) {
+  touches.delete(e.pointerId);
+  if (pinch && touches.size < 2) { pinch = null; return true; }
+  return false;
+}
+canvas.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch' && endTouch(e)) e.stopImmediatePropagation(); }, true);
+canvas.addEventListener('pointercancel', (e) => { if (e.pointerType === 'touch') endTouch(e); }, true);
+
 function endDrag() {
   if (panning) { panning = null; canvas.classList.remove('is-panning'); return; }
   if (penPts) { penEnd(); return; }
   if (erasing) { eraseEnd(); return; }
+  if (stamping) { stampEnd(); return; }
+  if (filling) { fillEnd(); return; }
   if (state.marquee) { endMarquee(); return; }
   if (!drag) return;
   const moved = drag.moved, count = drag.items.length;
@@ -994,6 +1088,7 @@ document.addEventListener('keydown', (e) => {
   if (!mod && !typing && key.toLowerCase() === 'p') { e.preventDefault(); togglePen(); return; }
   if (!mod && !typing && key.toLowerCase() === 'k') { e.preventDefault(); toggleBucket(); return; }
   if (!mod && !typing && key.toLowerCase() === 'v') { e.preventDefault(); setTool('select'); return; }
+  if (!mod && !typing && key.toLowerCase() === 's') { e.preventDefault(); setTool(state.tool === 'stamp' ? 'select' : 'stamp'); return; }
   if (!mod && !typing && key.toLowerCase() === 'i') { e.preventDefault(); setTool(state.tool === 'picker' ? state.prevTool : 'picker'); return; }
   if (!mod && !typing && key.toLowerCase() === 'e') { e.preventDefault(); setTool(state.tool === 'eraser' ? 'select' : 'eraser'); return; }
   if (key === 'Escape' && state.tool !== 'select') { setTool('select'); return; }
@@ -1210,6 +1305,7 @@ const TOOLS = {
   pen: ['Pen', 'Pen. Drag to draw. Hold still at the end of a stroke to snap it into a clean shape. Press V or Esc for the Select tool.'],
   eraser: ['Eraser', 'Eraser. Rub over lines and shapes to remove them. Undo brings them back.'],
   fill: ['Fill', 'Paint bucket. Pick a color, then click any part to color it. Click the paper to color the background.'],
+  stamp: ['Stamp', 'Stamp. Click to stamp, or drag to scatter a trail. Size and color come from the bar above; Rainbow varies the colors.'],
   picker: ['Color picker', 'Color picker. Click any part to borrow its color. Tip: hold Alt while using the Pen or Fill to pick a color in one click.'],
 };
 function setTool(t, quiet = false) {
@@ -1223,6 +1319,7 @@ function setTool(t, quiet = false) {
   canvas.classList.toggle('bucket-on', t === 'fill');
   canvas.classList.toggle('eraser-on', t === 'eraser');
   canvas.classList.toggle('picker-on', t === 'picker');
+  canvas.classList.toggle('stamp-on', t === 'stamp');
   $('#brush-cursor').hidden = true;
   draw();
   if (t !== 'select' && state.sel) select(null);
@@ -1422,13 +1519,78 @@ function pickAt(e) {
 // ---------- brush-size cursor ----------
 function moveBrushCursor(e) {
   const cur = $('#brush-cursor');
-  if (state.tool !== 'pen' && state.tool !== 'eraser') { cur.hidden = true; return; }
+  if (state.tool !== 'pen' && state.tool !== 'eraser' && state.tool !== 'stamp') { cur.hidden = true; return; }
   const fr = $('#canvas-frame').getBoundingClientRect(), cr = canvas.getBoundingClientRect();
-  const d = Math.max(4, state.pen.size * (cr.width / (W() / state.view.z)));
+  const d = Math.max(4, (state.tool === 'stamp' ? state.pen.size * 4 : state.pen.size) * (cr.width / (W() / state.view.z)));
   cur.hidden = false;
   cur.style.width = cur.style.height = `${d}px`;
   cur.style.transform = `translate(${e.clientX - fr.left - d / 2}px, ${e.clientY - fr.top - d / 2}px)`;
   cur.classList.toggle('is-eraser', state.tool === 'eraser');
+}
+
+// ---------- stamp tool ----------
+let stamping = null;
+let stampSeed = Date.now() % 100000;
+const stampRnd = () => { stampSeed = (stampSeed * 16807) % 2147483647; return stampSeed / 2147483647; };
+function stampAt(p) {
+  const size = state.pen.size * 4;
+  const b = makeStamp(state.stamp.kind, p.x, p.y, stampRnd, { size, color: state.pen.color, jitter: state.stamp.jitter, rainbow: state.stamp.rainbow, outline: state.stamp.outline });
+  b.group = stamping.group;
+  if (state.pen.sym !== 'none') b.repeats = [...(b.repeats || []), ...repeatsForPen()];
+  blocks().push(b);
+  stamping.count++; stamping.last = p;
+}
+function stampStart(e) {
+  const p = toSvgPoint(e);
+  stamping = { group: uid(), count: 0, last: null };
+  canvas.setPointerCapture(e.pointerId);
+  stampAt(p); draw();
+}
+function stampMove(e) {
+  const p = toSvgPoint(e), gap = state.pen.size * 4 * 1.15;
+  if (Math.hypot(p.x - stamping.last.x, p.y - stamping.last.y) < gap) return;
+  stampAt(p); draw();
+}
+function stampEnd() {
+  const { count } = stamping;
+  const name = (STAMPS.find((x) => x[0] === state.stamp.kind) || STAMPS[0])[1].toLowerCase();
+  if (count === 1) blocks()[blocks().length - 1].group = '';
+  stamping = null;
+  addRecent(state.pen.color);
+  refreshAll();
+  commit(count === 1 ? `Stamped one of the ${name}.` : `Stamped ${count} ${name}, grouped together.`, count === 1 ? 'Stamped' : `Stamped ${count} ${name}`);
+}
+
+// ---------- fill: click for a solid color, drag to blend a gradient ----------
+let filling = null;
+function fillStart(e) {
+  const g = e.target.closest('[data-block]');
+  const b = g && blocks().find((x) => x.id === g.dataset.block);
+  filling = { e, b, start: toSvgPoint(e), dragged: false, before: b ? { fillMode: b.fillMode, fill: b.fill, fill2: b.fill2, gradAngle: b.gradAngle } : { ...state.scene.background } };
+  canvas.setPointerCapture(e.pointerId);
+}
+function fillMove(e) {
+  const p = toSvgPoint(e), f = filling;
+  const dx = p.x - f.start.x, dy = p.y - f.start.y;
+  if (!f.dragged && Math.hypot(dx, dy) < 14) return;
+  f.dragged = true;
+  let angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+  if (f.b) {
+    if (f.b.locked) return;
+    angle -= f.b.rot || 0;
+    Object.assign(f.b, { fillMode: 'linear', fill: state.pen.color, fill2: f.before.fillMode === 'none' ? '#ffffff' : f.before.fill, gradAngle: Math.round(((angle % 360) + 360) % 360) });
+  } else {
+    Object.assign(state.scene.background, { mode: 'linear', c1: state.pen.color, c2: f.before.c1, angle: Math.round(((angle % 360) + 360) % 360) });
+  }
+  draw();
+}
+function fillEnd() {
+  const f = filling;
+  filling = null;
+  if (!f.dragged) { bucketAt(f.e); return; }
+  addRecent(state.pen.color);
+  refreshAll();
+  commit(f.b ? `Blended ${f.b.name} from ${state.pen.color}.` : 'Blended the background.', f.b ? `Gradient on ${f.b.name}` : 'Gradient background');
 }
 
 // ---------- eraser: rub over pen lines and shapes to remove them ----------
@@ -1667,6 +1829,11 @@ function wireCreative() {
   $('#pen-snap').addEventListener('change', (e) => { state.pen.snap = e.target.checked; });
   $('#pen-fill').addEventListener('change', (e) => { state.pen.fillLoops = e.target.checked; });
   $('#eraser-scope').addEventListener('change', (e) => { state.eraser.scope = e.target.value; });
+  $('#stamp-kind').replaceChildren(...STAMPS.map(([k, label]) => h('option', { value: k }, label)));
+  $('#stamp-kind').addEventListener('change', (e) => { state.stamp.kind = e.target.value; });
+  $('#stamp-jitter').addEventListener('input', (e) => { state.stamp.jitter = Number(e.target.value); });
+  $('#stamp-rainbow').addEventListener('change', (e) => { state.stamp.rainbow = e.target.checked; });
+  $('#stamp-outline').addEventListener('change', (e) => { state.stamp.outline = e.target.checked; });
   setTool('select', true);
   const hsel = $('#harmony');
   hsel.replaceChildren(...HARMONIES.map(([k, label]) => h('option', { value: k }, label)));

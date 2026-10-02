@@ -53,6 +53,15 @@ export function resizeCanvas(scene, w, h) {
   return scene;
 }
 
+/** Move a block to a new place in the drawing order (0 = bottom). Returns the same scene. */
+export function moveBlock(scene, id, toIndex) {
+  const from = scene.blocks.findIndex((b) => b.id === id);
+  if (from < 0) return scene;
+  const [b] = scene.blocks.splice(from, 1);
+  scene.blocks.splice(Math.max(0, Math.min(scene.blocks.length, toIndex)), 0, b);
+  return scene;
+}
+
 export function blankScene() {
   return {
     version: 1, width: 800, height: 800,
