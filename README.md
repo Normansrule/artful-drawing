@@ -93,7 +93,22 @@ Open the **Helper** tab while you draw. It looks at your drawing the way an art 
 | Left and right parts that almost mirror | Make them match | Faces, wings and ears read best when symmetric |
 | A face set high, or with small eyes, on a round body | Make it cuter | The "baby schema": big eyes, set low |
 | A plain white page | Add a soft background tinted from your colors | A background frames and finishes the picture |
+| A flat round shape | Add shading (shadow, highlight, crisp outline) | Light from one side makes shapes look solid |
+| A character floating in mid-air | Add a ground shadow | A shadow anchors things to the ground |
 | Parts completely off the page | Bring them back | Nobody can see them |
+
+<table>
+<tr>
+<td width="40%"><img src="docs/media/shading.gif" alt="A flat pink character getting one-click shading (a shadow, a highlight and a crisp outline) and then a soft ground shadow" width="100%"></td>
+<td width="60%" valign="top">
+
+**✨ Add shading** turns a flat shape into a round one: a shadow on the lower right, a soft highlight on the upper left, and the outline redrawn crisp on top. It's all clipped inside the shape and grouped with it, so it moves together and stays editable. It's in the Helper and on every filled shape's settings.
+
+**Put it on the ground** adds a soft oval shadow under a character so it stops floating.
+
+</td>
+</tr>
+</table>
 
 It also tells you **what's working** (strong contrast, a tidy palette, nice symmetry, good centering), and every tip links to the matching lesson on the Learn page.
 
@@ -234,6 +249,9 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Zoom** | Pinch, `Ctrl`+scroll or the − 100% + buttons; `Space`+drag to pan; `Ctrl+0` to fit |
 | **Text** | Six lettering styles, several lines, sticker outlines, stretch to fit; repeats and effects work too |
 | **Smart guides** | Pink lines while dragging; parts snap to each other's edges and middles and to the page center (`Alt` to drag freely) |
+| **Groups** | `Ctrl+G` groups selected parts so they always move together; `Ctrl+Shift+G` ungroups, `Alt`+click picks one part |
+| **Add shading** | One click: shadow, highlight and crisp outline, clipped inside and grouped |
+| **Tour** | A one-minute spotlight tour of the studio (welcome screen, or the ? help) |
 | **Helper** | Friendly tips with one-click fixes and hover previews, based on composition, contrast, color and cuteness |
 | **Recolor all** | One color plus a harmony recolors the whole drawing, keeping lights and darks |
 | **History** | A named list of every step; click one to jump back or forward |
@@ -297,6 +315,7 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | `I` | Color picker (or `Alt`+click) | `Ctrl` + `=` / `-` / `0` | Zoom in, out, fit |
 | `Space` + drag | Look around when zoomed in | Pinch / `Ctrl`+scroll | Zoom around the pointer |
 | `Shift`+click | Add a part to the selection | `Ctrl+A` | Select every part |
+| `Ctrl+G` | Group (`Ctrl+Shift+G` ungroup) | `Alt`+click | Pick one part inside a group |
 | Arrow keys | Move 1 pixel (with `Shift`, 10) | `,` / `.` | Previous or next shape |
 | `+` / `-` | Grow or shrink | `Esc` | Deselect, stop the pen or bloom |
 | `R` / `Shift+R` | Rotate 15° | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo or redo |
@@ -450,7 +469,7 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-24 tests cover the following, and GitHub Actions runs them on every push:
+25 tests cover the following, and GitHub Actions runs them on every push:
 
 - every shape at the edges of every slider
 - every repeat rule on every shape
@@ -463,6 +482,7 @@ npm test    # Node.js 18 or newer, nothing to install
 - every layer effect on shapes, lines and pen strokes
 - color harmonies (every picture, every harmony, and no light or dark ever moves)
 - every canvas shape (the drawing stays centered and the size survives saving)
+- one-click shading on every round shape (clipped, grouped, never stacking twice)
 - text in every lettering style, including awkward characters like `<`, `&` and quotes
 - the Helper (every tip on every picture draws cleanly, and each fix actually solves the problem it points out)
 - repair of broken project files

@@ -10,6 +10,7 @@
 import { clone } from './util.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, isHex } from './color.js';
 import { harmonize, isLineBlock } from './coloring.js';
+import { canShade, isShaded, addShading, addGroundShadow } from './shading.js';
 
 // ---------- small color helpers ----------
 const lum = (hex) => {
@@ -276,7 +277,32 @@ export function critique(scene, boxes = approxBoxes(scene)) {
     }
   }
 
-  // 10. A plain white page
+  // 10. Flat round shapes: add light and shadow
+  if (subj.length && vis.length <= 30) {
+    const main = [...subj].sort((a, b) => area(boxes.get(b.id)) - area(boxes.get(a.id)))[0];
+    const busy = (main.repeats || []).some((r) => ['spiral', 'grid', 'scatter'].includes(r.mode));
+    if (canShade(main) && ROUND.has(main.type) && !busy && vis.length <= 14 && !isShaded(scene, main) && !main.group) {
+      out.push({
+        id: 'shade', kind: 'tip', title: `Give ${main.name} some depth`,
+        why: 'A flat shape looks like a sticker; a little shadow on one side and a highlight on the other makes it look round and solid. Light comes from the top left.',
+        learn: 'learn.html#composition', ids: [main.id],
+        fix: (s) => addShading(s, main.id), fixLabel: 'Add shading',
+      });
+    }
+    // 11. Characters floating in mid-air
+    const hasShadow = vis.some((b) => /shadow/i.test(b.name) && !b.clipTo); // shading inside a shape doesn't count
+    const character = vis.some((b) => b.type === 'face');
+    if (u && character && ROUND.has(main.type) && !hasShadow && u.y + u.height < H * 0.93 && u.height > H * 0.2) {
+      out.push({
+        id: 'ground', kind: 'tip', title: 'Put it on the ground',
+        why: 'Without a shadow underneath, a character seems to float. A soft oval shadow below makes it stand on something.',
+        ids: subj.map((b) => b.id),
+        fix: (s) => addGroundShadow(s, subj.map((b) => b.id), u), fixLabel: 'Add a ground shadow',
+      });
+    }
+  }
+
+  // 12. A plain white page
   const bg = scene.background;
   if (bg.mode === 'solid' && /^#f{6}$/i.test(bg.c1) && vis.length >= 3 && subj.length) {
     // Tint the page from the most colorful part (its opposite on the color wheel), not from a gray one.

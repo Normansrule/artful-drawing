@@ -289,3 +289,13 @@
 
 /* ---------- v1.9: text ---------- */
 .field textarea { width: 100%; min-height: 3.2em; resize: vertical; font: inherit; padding: 0.4rem 0.5rem; border-radius: 8px; border: 1.5px solid var(--line); background: var(--panel-solid, #fff); color: var(--ink); }
+
+/* ---------- v2.0: tour ---------- */
+.tour { position: fixed; inset: 0; z-index: 200; }
+.tour-spot { position: fixed; border-radius: 16px; box-shadow: 0 0 0 9999px rgba(5, 3, 18, 0.62), 0 0 0 3px #ffce3a, 0 0 30px 6px rgba(255, 206, 58, 0.5); transition: all 320ms cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+.tour-card { position: fixed; padding: 1rem 1.1rem; border-radius: 18px; background: var(--panel-solid, #fff); color: var(--ink); border: 1.5px solid var(--line); box-shadow: 0 30px 70px -20px #000; transition: left 320ms, top 320ms; }
+.tour-card h2 { margin: 0.2rem 0 0.3rem; font-size: 1.25rem; }
+.tour-card p { margin: 0 0 0.8rem; color: var(--ink-2); font-size: 0.93rem; }
+.tour-count { font: 700 0.72rem/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); }
+.tour-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--pink); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }

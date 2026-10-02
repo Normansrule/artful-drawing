@@ -302,6 +302,9 @@ test('each Helper fix actually solves the problem it points out', () => {
   solve(scene([makeBlock('circle', { w: 420, h: 420, fill: '#b9b1ff' }), face]), `cute-${face.id}`);
   const plain = scene([makeBlock('circle', { w: 300, h: 300 }), makeBlock('star', { x: 300 }), makeBlock('heart', { x: 500 })]);
   solve(plain, 'background');
+  const lone = makeBlock('ghost', { w: 300, h: 360, fill: '#c8b8ff' });
+  solve(scene([lone, makeBlock('face', { y: 420, w: 140, h: 90, eyes: 1.3 })], { background: { mode: 'solid', c1: '#20184a', c2: '#20184a', angle: 90 } }), 'shade');
+  solve(scene([makeBlock('ghost', { y: 330, w: 300, h: 360, fill: '#c8b8ff' }), makeBlock('face', { y: 350, w: 140, h: 90, eyes: 1.3 })], { background: { mode: 'solid', c1: '#20184a', c2: '#20184a', angle: 90 } }), 'ground');
 });
 
 test('text draws every lettering style, on several lines, with repeats and effects', async () => {
@@ -319,4 +322,21 @@ test('text draws every lettering style, on several lines, with repeats and effec
   assert.equal(odd.blocks[0].text, 'Hello!');
   assert.equal(odd.blocks[1].text.length, 200);
   clean(renderSceneSVG(toColoringPage(scene([makeBlock('circle'), makeBlock('text')]))), 'text coloring page');
+});
+
+import { addShading, addGroundShadow, canShade } from '../js/shading.js';
+
+test('one-click shading adds clipped, grouped light and shadow to any round shape', () => {
+  for (const type of ['circle', 'heart', 'egg', 'blob', 'ghost', 'rect', 'star']) {
+    const host = makeBlock(type, { stroke: '#221f4f', strokeWidth: 5, repeats: [makeRepeat('mirror')], x: 520 });
+    const s = addShading(scene([host]), host.id);
+    assert.ok(canShade(host), type);
+    assert.equal(s.blocks.length, 5, `${type}: shadow, shade, highlight and outline`);
+    assert.ok(s.blocks.slice(1, 4).every((b) => b.clipTo === host.id && b.group === s.blocks[0].group && b.group));
+    clean(renderSceneSVG(normalizeScene(s)), `shaded ${type}`);
+    assert.equal(addShading(s, host.id).blocks.length, 5, 'shading twice must not stack');
+  }
+  assert.ok(!canShade(makeBlock('face')) && !canShade(makeBlock('wave')));
+  const g = addGroundShadow(scene([makeBlock('ghost')]), [], { x: 0, y: 0, width: 10, height: 10 });
+  assert.equal(g.blocks.length, 1, 'no parts, no shadow');
 });

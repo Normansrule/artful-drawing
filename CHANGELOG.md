@@ -2,6 +2,12 @@
 
 All notable changes to artful drawing. Each version is one release zip.
 
+## 2.0.0
+- **Add shading:** one click gives any filled shape a shadow, a highlight and a crisp outline, clipped inside and grouped with it. Available in the Helper and in each shape's settings.
+- **Helper:** two new tips, "Give it some depth" and "Put it on the ground" (a soft shadow under characters).
+- **Groups:** `Ctrl+G` / `Ctrl+Shift+G`; clicking any grouped part picks up the whole group, `Alt`+click picks one.
+- **Tour:** a one-minute spotlight tour of the studio, from the welcome screen or the help dialog.
+
 ## 1.9.0
 - **Text:** a new block with six lettering styles, several lines, sticker outlines and stretch-to-fit. Repeats, effects, coloring pages and the Helper all work with it.
 - **Smart guides:** while dragging, parts snap to each other's edges and middles and to the page center, with pink guide lines. Hold `Alt` to move freely.

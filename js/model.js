@@ -14,7 +14,7 @@ export const EFFECTS = [['none', 'None'], ['shadow', 'Drop shadow'], ['glow', 'G
 export const COMMON = {
   x: 400, y: 400, w: 200, h: 200, rot: 0, flipX: false,
   fill: '#ff5c8a', fill2: '#ffce3a', fillMode: 'solid', gradAngle: 90,
-  stroke: '#221f4f', strokeWidth: 0, opacity: 1, effect: 'none',
+  stroke: '#221f4f', strokeWidth: 0, opacity: 1, effect: 'none', group: '',
   visible: true, locked: false, clipTo: '',
 };
 
@@ -83,6 +83,7 @@ export function normalizeScene(input) {
       seen.add(nb.id);
       for (const k of ['fill', 'fill2', 'stroke']) if (!isHex(nb[k])) nb[k] = COMMON[k];
       if (!EFFECTS.some(([id]) => id === nb.effect)) nb.effect = 'none';
+      if (typeof nb.group !== 'string') nb.group = '';
       if (nb.type === 'text') nb.text = typeof nb.text === 'string' ? nb.text.slice(0, 200) : 'Hello!';
       if (nb.type === 'stroke') {
         const pts = Array.isArray(nb.points) ? nb.points.filter((q) => Array.isArray(q) && Number.isFinite(q[0]) && Number.isFinite(q[1])) : [];

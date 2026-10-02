@@ -1,6 +1,6 @@
 {
   "name": "artful-drawing",
-  "version": "1.9.0",
+  "version": "2.0.0",
   "description": "drawing made easy: guided drawings, a symmetry pen, and simple shapes that mirror, spin and repeat.",
   "private": true,
   "type": "module",

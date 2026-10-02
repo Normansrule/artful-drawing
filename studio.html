@@ -174,6 +174,7 @@
   <dialog id="help-dialog" aria-labelledby="help-title">
     <form method="dialog" class="dialog-body">
       <h2 id="help-title">Keyboard and mouse</h2>
+    <p><button type="button" class="btn btn-small" id="btn-tour">Take the 1-minute tour</button></p>
       <p>Everything in artful drawing can be done with a keyboard, a mouse, or both.</p>
       <div class="shortcut-grid">
         <section>
@@ -218,6 +219,7 @@
             <dt><kbd>Shift</kbd>+click</dt><dd>Add a part to the selection (or drag a box on empty paper)</dd>
             <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>Select every part</dd>
             <dt><kbd>Alt</kbd>+drag</dt><dd>Move without snapping to smart guides</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>G</kbd></dt><dd>Group the selected parts (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> ungroups; <kbd>Alt</kbd>+click picks one part of a group)</dd>
             <dt><kbd>?</kbd></dt><dd>This list</dd>
           </dl>
         </section>
@@ -235,7 +237,7 @@
   <script type="module" src="js/theme.js"></script>
 <dialog id="welcome" class="welcome" aria-labelledby="welcome-title">
   <h2 id="welcome-title">What would you like to draw?</h2>
-  <p>No drawing skills needed. Pick a way to start; you can switch any time.</p>
+  <p>No drawing skills needed. Pick a way to start; you can switch any time. <button type="button" class="link-btn" id="welcome-tour">New here? Take the 1-minute tour</button></p>
   <div class="welcome-grid">
     <button class="welcome-card" data-start="guide"><span class="wc-icon" aria-hidden="true">🦋</span><strong>Draw along</strong><span>Step-by-step guides with a faint picture to follow, like tracing paper.</span></button>
     <button class="welcome-card" data-start="pen"><span class="wc-icon" aria-hidden="true">✎</span><strong>Draw with the pen</strong><span>Draw rough, it comes out neat: wobbles are smoothed, and hold still to snap a rough circle, box or triangle into a clean one.</span></button>

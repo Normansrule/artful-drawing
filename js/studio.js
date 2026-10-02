@@ -11,6 +11,8 @@ import { RECIPES, getRecipe } from './recipes.js';
 import { toColoringPage, paintBlock, harmonize, HARMONIES } from './coloring.js';
 import { makeStabilizer, speedPressure, recognizeShape } from './assist.js';
 import { critique } from './critique.js';
+import { canShade, isShaded, addShading } from './shading.js';
+import { startTour } from './tour.js';
 import { TEMPLATES, getTemplate } from './templates.js';
 import { PALETTES } from './color.js';
 import { encodeScene, decodeScene } from './share.js';
@@ -410,6 +412,32 @@ function bboxOf(b) {
   const g = canvas.querySelector(`[data-block="${CSS.escape(b.id)}"]`);
   try { const bb = g && g.getBBox(); return bb && bb.width + bb.height > 0 ? bb : null; } catch { return null; }
 }
+function groupSelection() {
+  const list = groupBlocks();
+  if (list.length < 2) return announce('Select two or more parts first (Shift+click, or drag a box), then press Ctrl+G.');
+  const gid = uid();
+  list.forEach((b) => { b.group = gid; });
+  renderLayers(); renderInspector();
+  commit(`Grouped ${list.length} parts. Click any of them to move them all; Alt+click picks one.`, `Grouped ${list.length} parts`);
+}
+function ungroupSelection() {
+  const list = groupBlocks().filter((b) => b.group);
+  if (!list.length) return announce('Nothing grouped is selected.');
+  const gids = new Set(list.map((b) => b.group));
+  blocks().forEach((b) => { if (gids.has(b.group)) b.group = ''; });
+  renderLayers(); renderInspector();
+  commit('Ungrouped. Each part moves on its own again.', 'Ungrouped');
+}
+function shadeSelected() {
+  const b = selected();
+  if (!canShade(b)) return announce('Shading works on filled shapes like circles, hearts, eggs and blobs.');
+  if (isShaded(state.scene, b)) return announce(`${b.name} already has shading.`);
+  const next = addShading(state.scene, b.id);
+  state.scene.blocks = next.blocks;
+  refreshAll();
+  commit(`Added shading to ${b.name}: a shadow, a highlight and a crisp outline, grouped with it. Undo removes it.`, `Shaded ${b.name}`);
+}
+
 /** Line parts up with each other, like Align in a design app. */
 function alignGroup(how) {
   const items = groupBlocks().map((b) => ({ b, bb: bboxOf(b) })).filter((x) => x.bb && !x.b.locked);
@@ -675,6 +703,9 @@ function renderInspector() {
       bar('left', '⇤', 'Align left edges'), bar('center', '↔', 'Center horizontally'), bar('right', '⇥', 'Align right edges'),
       bar('top', '⤒', 'Align top edges'), bar('middle', '↕', 'Center vertically'), bar('bottom', '⤓', 'Align bottom edges'),
       bar('spread-x', '⋯', 'Space evenly left to right'), bar('spread-y', '⋮', 'Space evenly top to bottom')),
+    h('div', { class: 'align-row' },
+      h('button', { type: 'button', class: 'btn btn-small', onclick: groupSelection, title: 'Ctrl+G' }, '⛓ Group'),
+      groupBlocks().some((x) => x.group) ? h('button', { type: 'button', class: 'btn btn-small', onclick: ungroupSelection, title: 'Ctrl+Shift+G' }, 'Ungroup') : null),
   ));
 }
 
@@ -764,6 +795,7 @@ function renderInspectorBase() {
 
   // Actions
   root.append(h('div', { class: 'action-row' },
+    canShade(b) && !isShaded(state.scene, b) ? h('button', { type: 'button', class: 'btn btn-small btn-bloom', onclick: shadeSelected, title: 'Add a shadow, a highlight and a crisp outline' }, '✨ Add shading') : null,
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => duplicate(b) }, 'Duplicate'),
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => moveLayer(b, 1) }, 'Bring forward'),
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => moveLayer(b, -1) }, 'Send backward'),
@@ -854,7 +886,12 @@ canvas.addEventListener('pointerdown', (e) => {
   const b = blocks().find((x) => x.id === g.dataset.block);
   if (!b) return;
   if (e.shiftKey) { toggleInGroup(b); return; }
-  const inGroup = groupBlocks().some((x) => x.id === b.id) && groupBlocks().length > 1;
+  let inGroup = groupBlocks().some((x) => x.id === b.id) && groupBlocks().length > 1;
+  if (!inGroup && b.group && !e.altKey) { // a grouped part: pick up the whole group (Alt+click picks just this part)
+    const members = blocks().filter((x) => x.group === b.group);
+    selectMany([...members.filter((x) => x.id !== b.id), b]);
+    inGroup = members.length > 1;
+  }
   if (!inGroup && state.sel !== b.id) select(b.id);
   if (b.locked) { announce(`${b.name} is locked. Unlock it in Layers to move it.`); return; }
   const items = (inGroup ? groupBlocks() : [b]).filter((x) => !x.locked).map((x) => ({ b: x, dx: x.x - p.x, dy: x.y - p.y }));
@@ -965,6 +1002,7 @@ document.addEventListener('keydown', (e) => {
   if (key === ',' || key === '<') { e.preventDefault(); cycleSelection(-1); return; }
   if (key === '.' || key === '>') { e.preventDefault(); cycleSelection(1); return; }
   if (!mod && key.toLowerCase() === 'g') { state.guides = !state.guides; $('#opt-guides').checked = state.guides; draw(); return; }
+  if (mod && key.toLowerCase() === 'g') { e.preventDefault(); e.shiftKey ? ungroupSelection() : groupSelection(); return; }
   if (mod && key.toLowerCase() === 'a') { e.preventDefault(); selectMany(blocks().filter((x) => x.visible && !x.locked)); announce(`Selected all ${groupBlocks().length} parts.`); return; }
   if (!b) return;
   const group = groupBlocks();
@@ -1638,6 +1676,7 @@ function wireCreative() {
     refreshAll();
     commit(`Recolored everything around ${state.pen.color}, keeping its lights and darks. Undo to go back.`);
   });
+  $('#btn-tour')?.addEventListener('click', () => { $('#help-dialog')?.close?.(); startTour(); });
   $('#zoom-in').addEventListener('click', () => zoomStep(1.25));
   $('#zoom-out').addEventListener('click', () => zoomStep(0.8));
   $('#zoom-level').addEventListener('click', () => setZoom(1));
@@ -1664,6 +1703,7 @@ function wireCreative() {
   const dlg = $('#welcome');
   dlg.querySelectorAll('[data-start]').forEach((b) => b.addEventListener('click', () => { dlg.close(); quickStart(b.dataset.start); }));
   dlg.addEventListener('close', () => { try { localStorage.setItem(WELCOMED_KEY, '1'); } catch { /* ignore */ } });
+  $('#welcome-tour')?.addEventListener('click', () => { dlg.close(); startTour(); });
 }
 
 async function init() {
