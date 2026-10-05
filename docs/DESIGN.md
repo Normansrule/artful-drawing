@@ -1,5 +1,7 @@
 # Design notes
 
+> **Since 2.3** the default look is the professional **Studio** theme (graphite dark) with a **Daylight** light variant, defined in `css/pro.css`: Inter type, a single blue accent, 1px borders, 4–6px radii, a neutral pasteboard behind the canvas and no decorative motion. The playful look described below lives on as the **Night** theme, one click away in the theme switcher.
+
 artful drawing has two moods that share one set of tokens.
 
 - **Studio, Learn and References** use a *risograph sticker sheet* look: periwinkle

@@ -9,11 +9,12 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/effects.css">
   <link rel="stylesheet" href="css/night.css">
-  <script>try{document.documentElement.dataset.theme=localStorage.getItem("artful-drawing:theme")||"night"}catch(e){document.documentElement.dataset.theme="night"}</script>
+  <link rel="stylesheet" href="css/pro.css">
+  <script>(function(){var t="studio";try{t=localStorage.getItem("artful-drawing:theme2")||"studio"}catch(e){}if(["studio","daylight","night"].indexOf(t)<0)t="studio";var r=document.documentElement;r.dataset.theme=t;if(t!=="night")r.classList.add("pro")})()</script>
 </head>
 <body class="page-studio">
   <a class="skip-link" href="#canvas">Skip to the canvas</a>
@@ -106,12 +107,12 @@
             <select id="eraser-scope"><option value="mine" selected>Only what I drew</option><option value="all">Everything</option></select></label>
           <span class="opt opt-harmony" data-for="fill" title="Recolor the whole drawing from the current color, keeping its lights and darks">
             <label><span class="sr-only">Color harmony</span><select id="harmony"></select></label>
-            <button class="btn btn-small" id="btn-harmony" type="button">✨ Recolor all</button>
+            <button class="btn btn-small" id="btn-harmony" type="button">Recolor all</button>
           </span>
           <span class="opt" data-for="fill"><span class="opt-hint">Click a part to color it, or <b>drag across it to blend a gradient</b>. The paper is the background. <kbd>Alt</kbd>+click borrows a color.</span></span>
           <span class="opt" data-for="picker"><span class="opt-hint">Click any part to borrow its color, then you go straight back to your tool.</span></span>
         <div class="trace-bar opt" data-for="pen select" role="group" aria-label="Tracing photo">
-          <button class="btn" id="btn-trace" title="Put a photo over the canvas to trace it with the pen"><span aria-hidden="true">📷</span> Trace</button>
+          <button class="btn" id="btn-trace" title="Put a photo over the canvas to trace it with the pen">Trace photo</button>
           <span class="trace-opts" id="trace-opts" hidden>
             <label class="pen-opt" title="Photo visibility"><span class="sr-only">Photo visibility</span><input type="range" id="trace-opacity" min="0.05" max="0.9" step="0.05" value="0.35"></label>
             <button class="icon-btn" id="trace-remove" aria-label="Remove the tracing photo" title="Remove the tracing photo">✕</button>

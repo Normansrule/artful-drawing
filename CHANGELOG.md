@@ -2,6 +2,11 @@
 
 All notable changes to artful drawing. Each version is one release zip.
 
+## 2.3.0
+- **A more professional look.** New default theme "Studio" (graphite dark) and a neutral "Daylight" theme: Inter type, one blue accent, thin borders, small radii, a neutral pasteboard around the canvas, and no decorative motion. The playful "Night" theme is still in the theme switcher.
+- Plainer interface wording without emoji; the home page drops floating stickers, click sparks and tilting cards, and tones down the ink background.
+- README restyled to match, with refreshed screenshots and recordings.
+
 ## 2.2.0
 - **Layers:** drag to reorder (or `Alt`+`↑`/`↓` on a layer); grouped parts show ⛓; `Shift`+click a layer adds it to the selection.
 - **Touch and stylus:** two-finger pinch zoom and pan; palm rejection once a stylus is used.

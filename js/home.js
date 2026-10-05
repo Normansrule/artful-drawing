@@ -307,12 +307,10 @@ if (motion) whileVisible(keysSvg, (el, on) => { clearTimeout(demoTimer); if (on 
   ringGallery($('#ring-stage'));
 }
 
-clickSparks();
+// Click sparks are part of the playful look; the professional home page leaves them out.
 
 // ---------- motion primitives ----------
 spotlight(document.querySelectorAll('.bento-card, .pic-card, .duo a, .way'));
-tilt(document.querySelectorAll('.bento-card, .duo a, .way'), 4);
-magnetic(document.querySelectorAll('.magnet'), 0.18);
 tickers(document.querySelectorAll('.ticker'));
 reveal(document.querySelectorAll('.home-section h2, .home-section .sub, .stat, .duo a, .kicker'));
 

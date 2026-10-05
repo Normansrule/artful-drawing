@@ -4,19 +4,19 @@
 
 # artful-drawing
 
-### drawing is easier than you think.
+### A drawing studio that helps you draw well.
 
 A free drawing studio that runs in your browser. Follow a guided drawing step by step,<br>
 doodle with a pen that draws in perfect symmetry, color in a coloring page, trace over a photo,<br>
 or build anything from simple shapes.<br>
 **No drawing skills, no sign-up, nothing to install.** Just a keyboard and a mouse.
 
-[**✏️ Start drawing**](https://normansrule.github.io/artful-drawing/studio.html) ·
-[**🦋 Draw along**](https://normansrule.github.io/artful-drawing/studio.html#guide=butterfly) ·
-[**✨ Doodle with the pen**](https://normansrule.github.io/artful-drawing/studio.html#start=pen) ·
-[**🪣 Color it in**](https://normansrule.github.io/artful-drawing/studio.html#color=butterfly) ·
-[**🏠 Website**](https://normansrule.github.io/artful-drawing/) ·
-[**📖 Learn**](https://normansrule.github.io/artful-drawing/learn.html)
+[**Start drawing**](https://normansrule.github.io/artful-drawing/studio.html) ·
+[**Draw along**](https://normansrule.github.io/artful-drawing/studio.html#guide=butterfly) ·
+[**Doodle with the pen**](https://normansrule.github.io/artful-drawing/studio.html#start=pen) ·
+[**Color it in**](https://normansrule.github.io/artful-drawing/studio.html#color=butterfly) ·
+[**Website**](https://normansrule.github.io/artful-drawing/) ·
+[**Learn**](https://normansrule.github.io/artful-drawing/learn.html)
 
 [![Tests](https://github.com/Normansrule/artful-drawing/actions/workflows/test.yml/badge.svg)](https://github.com/Normansrule/artful-drawing/actions/workflows/test.yml)
 ![License: MIT](https://img.shields.io/badge/license-MIT-ff4f87)
@@ -30,7 +30,7 @@ or build anything from simple shapes.<br>
 
 ---
 
-## 🖌 You draw. It helps.
+## You draw. It helps.
 
 <table>
 <tr>
@@ -75,7 +75,7 @@ or build anything from simple shapes.<br>
 </tr>
 </table>
 
-## 💡 The Helper: a friendly art teacher
+## The Helper: a friendly art teacher
 
 <img src="docs/media/helper.gif" alt="The Helper tab suggesting fixes for a rough ghost drawing: making the face cuter, matching two stars, adding a background and fixing contrast, one click each" width="100%">
 
@@ -102,7 +102,7 @@ Open the **Helper** tab while you draw. It looks at your drawing the way an art 
 <td width="40%"><img src="docs/media/shading.gif" alt="A flat pink character getting one-click shading (a shadow, a highlight and a crisp outline) and then a soft ground shadow" width="100%"></td>
 <td width="60%" valign="top">
 
-**✨ Add shading** turns a flat shape into a round one: a shadow on the lower right, a soft highlight on the upper left, and the outline redrawn crisp on top. It's all clipped inside the shape and grouped with it, so it moves together and stays editable. It's in the Helper and on every filled shape's settings.
+**Add shading** turns a flat shape into a round one: a shadow on the lower right, a soft highlight on the upper left, and the outline redrawn crisp on top. It's all clipped inside the shape and grouped with it, so it moves together and stays editable. It's in the Helper and on every filled shape's settings.
 
 **Put it on the ground** adds a soft oval shadow under a character so it stops floating.
 
@@ -110,11 +110,11 @@ Open the **Helper** tab while you draw. It looks at your drawing the way an art 
 </tr>
 </table>
 
-Stuck on what to draw? The top of the Helper has **🎲 Need an idea?**: 30 friendly prompts ("A whale in the clouds", "A cactus wearing a sweater"), each with a first step so the blank page is never scary.
+Stuck on what to draw? The top of the Helper has **Need an idea?**: 30 friendly prompts ("A whale in the clouds", "A cactus wearing a sweater"), each with a first step so the blank page is never scary.
 
 It also tells you **what's working** (strong contrast, a tidy palette, nice symmetry, good centering), and every tip links to the matching lesson on the Learn page.
 
-## ✨ Stamps and gradients
+## Stamps and gradients
 
 <table>
 <tr>
@@ -129,7 +129,7 @@ It also tells you **what's working** (strong contrast, a tidy palette, nice symm
 </tr>
 </table>
 
-## 🔤 Words and neat layouts
+## Words and neat layouts
 
 <table>
 <tr>
@@ -146,28 +146,28 @@ Lettering only uses fonts that are already on people's computers, so exported pi
 </tr>
 </table>
 
-## 🎨 Change your mind as often as you like
+## Change your mind as often as you like
 
 <table>
 <tr>
 <td width="40%" valign="top"><img src="docs/media/recolor.gif" alt="A mandala recolored five times in one click each: analogous teal, complementary yellow, triadic violet, split pink and monochrome blue" width="100%"></td>
 <td width="60%" valign="top">
 
-**✨ Recolor all.** Pick one color, pick a harmony (analogous, complementary, triadic, split or monochrome) and press **Recolor all**. Every color in your drawing changes, but each one keeps its lightness, so light stays light and dark stays dark. It's the same idea as "recolor artwork" in professional design apps.
+**Recolor all.** Pick one color, pick a harmony (analogous, complementary, triadic, split or monochrome) and press **Recolor all**. Every color in your drawing changes, but each one keeps its lightness, so light stays light and dark stays dark. It's the same idea as "recolor artwork" in professional design apps.
 
-**🕘 History.** Every step you take is listed by name ("Added Heart", "Snapped into a clean star", "Aligned 3 parts"). Click any step to jump back to it, then forward again.
+**History.** Every step you take is listed by name ("Added Heart", "Snapped into a clean star", "Aligned 3 parts"). Click any step to jump back to it, then forward again.
 
-**🔲 Select several parts.** Drag a box on the empty paper, `Shift`+click parts, or press `Ctrl+A`. Then move, nudge, duplicate or delete them together, and use **Align** to line them up or space them evenly.
+**Select several parts.** Drag a box on the empty paper, `Shift`+click parts, or press `Ctrl+A`. Then move, nudge, duplicate or delete them together, and use **Align** to line them up or space them evenly.
 
-**📐 Any canvas shape.** Square, poster (3:4), card (5:7), landscape (4:3), desktop (16:9) or phone wallpaper (9:16). Your drawing stays centered when you switch.
+**Any canvas shape.** Square, poster (3:4), card (5:7), landscape (4:3), desktop (16:9) or phone wallpaper (9:16). Your drawing stays centered when you switch.
 
-**🏷 Stickers.** *Download sticker* saves a PNG with a see-through background, ready for chat apps, slides and printable sticker paper.
+**Stickers.** *Download sticker* saves a PNG with a see-through background, ready for chat apps, slides and printable sticker paper.
 
 </td>
 </tr>
 </table>
 
-## ✏️ Four easy ways to draw
+## Four easy ways to draw
 
 <table>
 <tr>
@@ -177,7 +177,7 @@ Lettering only uses fonts that are already on people's computers, so exported pi
 
 <img src="docs/media/draw-along.gif" alt="A butterfly appearing step by step over a faint tracing-paper guide" width="100%">
 
-Pick one of **7 guided drawings**. A faint copy of the finished picture sits on the canvas like tracing paper. Each step tells you what to do, and a **Do this step ✨** button does it for you if you get stuck.
+Pick one of **7 guided drawings**. A faint copy of the finished picture sits on the canvas like tracing paper. Each step tells you what to do, and a **Do this step ** button does it for you if you get stuck.
 
 </td>
 <td width="33%" valign="top">
@@ -215,27 +215,27 @@ Every picture is also a **coloring page**. Pick a color, click a part, done. Cli
 
 | Helper | What it does |
 |---|---|
-| **📷 Trace a photo** | Put any photo over the canvas like a lightbox, then draw over it with the pen. The photo is never saved or exported. You can also drop an image straight onto the canvas. |
-| **🪣 Paint bucket** (`K`) | Click any part to color it. Lines get a new line color; shapes get a new fill. |
-| **🎨 Quick colors** | Ten ready-made colors beside the pen, one click each. |
-| **🖼 My drawings** | Keep up to 30 drawings in your browser, with thumbnails, and reopen them any time. |
-| **👻 Tracing paper** | In Draw along, the parts you haven't drawn yet show faintly where they belong. |
-| **↩️ Undo everything** | 150 steps of undo, and your drawing saves itself as you go. |
+| **Trace a photo** | Put any photo over the canvas like a lightbox, then draw over it with the pen. The photo is never saved or exported. You can also drop an image straight onto the canvas. |
+| **Paint bucket** (`K`) | Click any part to color it. Lines get a new line color; shapes get a new fill. |
+| **Quick colors** | Ten ready-made colors beside the pen, one click each. |
+| **My drawings** | Keep up to 30 drawings in your browser, with thumbnails, and reopen them any time. |
+| **Tracing paper** | In Draw along, the parts you haven't drawn yet show faintly where they belong. |
+| **↩Undo everything** | 150 steps of undo, and your drawing saves itself as you go. |
 
 </td>
 </tr>
 </table>
 
-## 🖼 What people draw with it
+## What people draw with it
 
 <img src="docs/media/gallery.png" alt="Thirteen pictures made in artful drawing: butterfly, ghost, Christmas tree, snowflake, Easter eggs, flower, sunny day, autumn tree, mandala, pumpkin, golden spiral, hearts and a kitty" width="100%">
 
 Every picture above is made **only** from simple shapes and repeat rules. Open any of them in the studio and click its parts to see exactly how it was built.
 
-## 🚀 Your first drawing in 60 seconds
+## Your first drawing in 60 seconds
 
 1. Open the [**studio**](https://normansrule.github.io/artful-drawing/studio.html) and choose **Draw along → Snowflake**.
-2. Read the first step, then either follow it or press **Do this step ✨**.
+2. Read the first step, then either follow it or press **Do this step **.
 3. Press **Next →** until the snowflake is finished (three steps, about two minutes).
 4. Press **▶ Bloom it** to watch it grow, then **Save PNG**.
 5. Change anything: click a part, pick a new color from the palette, or press **Shuffle colors**.
@@ -244,7 +244,7 @@ Nothing can break. **Undo** remembers 150 steps, and your drawing saves itself i
 
 ---
 
-## 🔗 Links that open straight into a mode
+## Links that open straight into a mode
 
 Share these with anyone. They open the studio ready to go, with no menus to find.
 
@@ -255,9 +255,9 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | `studio.html#start=pen` | A night canvas with the kaleidoscope pen switched on |
 | `studio.html#template=mandala` | A finished picture, blooming into place |
 
-## 🧰 The toolbox
+## The toolbox
 
-<img src="docs/screenshots/studio.png" alt="The studio in the Night theme: a shelf of shape tiles, a snowflake on the canvas, and the settings panel" width="100%">
+<img src="docs/screenshots/studio.png" alt="The studio in the default dark Studio theme: shape tiles, a butterfly on the canvas, and the settings panel" width="100%">
 
 | Tool | What it does |
 |---|---|
@@ -268,7 +268,7 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Smart guides** | Pink lines while dragging; parts snap to each other's edges and middles and to the page center (`Alt` to drag freely) |
 | **Stamp** (`S`) | Click or drag to scatter stars, sparkles, hearts, dots, flowers, leaves, snowflakes or bubbles |
 | **Gradient fill** | With Fill, drag across a part (or the paper) to blend a gradient in that direction |
-| **Layers** | Drag layers to reorder them (or `Alt`+`↑`/`↓`); grouped parts show ⛓ |
+| **Layers** | Drag layers to reorder them (or `Alt`+`↑`/`↓`); grouped parts show |
 | **Touch and stylus** | Two fingers pinch to zoom and pan; once a stylus is used, resting fingers and palms never draw |
 | **Need an idea?** | 30 drawing prompts in the Helper tab, each with a first step |
 | **Groups** | `Ctrl+G` groups selected parts so they always move together; `Ctrl+Shift+G` ungroups, `Alt`+click picks one part |
@@ -325,7 +325,7 @@ Solid, gradient or glow fills, **8 curated palettes**, a *color shift per copy* 
 
 ---
 
-## ⌨️ Keyboard and mouse
+## Keyboard and mouse
 
 Everything works with a **keyboard alone**, a **mouse alone**, or both.
 
@@ -351,12 +351,12 @@ With a mouse: drag to move, scroll to resize, and hold `Shift` while scrolling t
 
 ---
 
-## 🌌 The website around it
+## The website around it
 
 | Page | What's there |
 |---|---|
 | **Home** (`index.html`) | Live swirling ink, pictures that draw themselves, a scroll-built butterfly, a **symmetry painter** you can play with, a 3D picture carousel, and keycaps you can press |
-| **Studio** (`studio.html`) | The drawing app: pen, paint bucket, draw along, coloring pages, tracing and My drawings. Night theme by default, with a ☀ switch to the light paper theme |
+| **Studio** (`studio.html`) | The drawing app: pen, paint bucket, draw along, coloring pages, tracing and My drawings. A professional dark theme by default, with Light and Playful themes in the theme switcher |
 | **Learn** (`learn.html`) | 17 friendly lessons on symmetry, the golden angle, fractals, color, composition and why cute things look cute, with 50 live examples and 4 slider playgrounds |
 | **References** (`references.html`) | Free museum collections, nature photography, pattern books, color tools, drawing courses and the projects that inspired this one |
 
@@ -369,7 +369,7 @@ With a mouse: drag to move, scroll to resize, and hold `Shift` while scrolling t
 
 ---
 
-## 🛠 Put it online from an Ubuntu terminal
+## Put it online from an Ubuntu terminal
 
 These commands take a fresh Ubuntu terminal (including Windows Subsystem for Linux, WSL) to a live website.
 
@@ -433,7 +433,7 @@ If `python3 -m http.server 8000` says *Address already in use*, a preview is alr
 
 ---
 
-## 🔬 How it works
+## How it works
 
 A drawing is plain JavaScript Object Notation (JSON): a background and a list of shapes, each with a position, size, color and a stack of repeat rules. One pure renderer turns that list into Scalable Vector Graphics (SVG). The same renderer powers the studio, every thumbnail, the Learn page, the video export and the tests.
 
@@ -463,7 +463,8 @@ The math, from symmetry groups to the golden angle and fractal dimensions, is ex
 ```
 index.html  studio.html  learn.html  references.html
 css/
-  style.css      layout and design tokens      night.css    Night theme (default)
+  style.css      layout and design tokens      pro.css      Studio and Daylight themes (default)
+  night.css      the playful Night theme
   effects.css    motion layer, pen, guides     home.css     home page
 js/
   shapes.js      every shape: settings + geometry (including the pen stroke)
@@ -486,7 +487,7 @@ tests/           Node test suite (npm test)
 
 </details>
 
-## 🧪 Tests
+## Tests
 
 ```bash
 npm test    # Node.js 18 or newer, nothing to install
@@ -514,7 +515,7 @@ npm test    # Node.js 18 or newer, nothing to install
 - share links that round-trip exactly
 - the bloom timeline
 
-## ♿ Accessibility
+## Accessibility
 
 - Everything works with a keyboard alone, with visible focus outlines everywhere.
 - Body text uses Atkinson Hyperlegible, a typeface designed by the Braille Institute for low-vision readers.
@@ -522,11 +523,11 @@ npm test    # Node.js 18 or newer, nothing to install
 - Every slider has a number box for exact values.
 - With your system set to reduce motion, decorative animation stops and the ink simulation never starts. Every page is complete without motion.
 
-## 🤝 Contributing
+## Contributing
 
 Adding a shape, a repeat rule, a picture or a draw-along guide usually takes one small object in one file. [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) walks through each, and [`docs/DESIGN.md`](docs/DESIGN.md) explains the look and the motion principles.
 
-## 🙏 Credits and licenses
+## Credits and licenses
 
 artful drawing is released under the [MIT License](LICENSE).
 
@@ -541,6 +542,6 @@ artful drawing is released under the [MIT License](LICENSE).
 
 <div align="center">
 
-**[✏️ Start drawing →](https://normansrule.github.io/artful-drawing/studio.html)**
+**[Start drawing →](https://normansrule.github.io/artful-drawing/studio.html)**
 
 </div>

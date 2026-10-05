@@ -144,7 +144,7 @@ let ideaIndex = Math.floor(Math.random() * 1000);
 function ideaCard() {
   const [idea, start] = pickPrompt(ideaIndex);
   const card = h('section', { class: 'idea-card', 'aria-live': 'polite' },
-    h('span', { class: 'idea-label' }, '🎲 Need an idea?'),
+    h('span', { class: 'idea-label' }, 'Need an idea?'),
     h('strong', {}, idea),
     h('p', {}, start),
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => { ideaIndex++; card.replaceWith(ideaCard()); } }, 'Another idea'));
@@ -172,12 +172,12 @@ function renderHelper() {
   panel.replaceChildren(
     ideaCard(),
     h('div', { class: 'helper-head' },
-      h('h2', {}, tips.length ? 'A few ideas' : 'Looking good!'),
+      h('h2', {}, tips.length ? `Suggestions (${tips.length})` : 'No suggestions'),
       h('p', { class: 'note' }, tips.length
         ? 'Like an art teacher looking over your shoulder. Hover a fix to preview it; every fix is one step you can undo. You stay the artist.'
         : 'No suggestions right now. Keep drawing: the Helper checks again after every change.')),
     ...tips.map((t) => h('article', { class: 'tip-card' },
-      h('h3', {}, h('span', { class: 'tip-icon', 'aria-hidden': 'true' }, '💡'), t.title),
+      h('h3', {}, t.title),
       h('p', {}, t.why),
       h('div', { class: 'tip-actions' },
         t.fix ? h('button', {
@@ -189,7 +189,7 @@ function renderHelper() {
             refreshAll();
             commit(`Helper: ${t.fixLabel}. Undo if you liked it better before.`, `Helper: ${t.fixLabel}`);
           },
-        }, `✨ ${t.fixLabel || 'Fix it'}`) : null,
+        }, t.fixLabel || 'Apply fix') : null,
         t.ids?.length ? h('button', { type: 'button', class: 'btn btn-small', onclick: () => {
           selectMany(blocks().filter((b) => t.ids.includes(b.id)));
           canvas.classList.remove('snapped'); void canvas.getBoundingClientRect(); canvas.classList.add('snapped');
@@ -559,7 +559,7 @@ function tileSVG(type) {
   const whiteish = (c) => /^#f[a-f0-9]f[a-f0-9]f[a-f0-9]$/i.test(c);
   if (whiteish(b.fill)) b.fill = '#b9b1ff';
   if (whiteish(b.stroke)) b.stroke = '#221f4f';
-  if (document.documentElement.dataset.theme === 'night') {
+  if (['night', 'studio'].includes(document.documentElement.dataset.theme)) {
     // Dark ink would vanish on night tiles: draw it in moonlight instead.
     if (b.stroke === '#221f4f') b.stroke = '#efeaff';
     if (b.fill === '#221f4f') b.fill = '#efeaff';
@@ -718,7 +718,7 @@ function renderInspector() {
       bar('top', '⤒', 'Align top edges'), bar('middle', '↕', 'Center vertically'), bar('bottom', '⤓', 'Align bottom edges'),
       bar('spread-x', '⋯', 'Space evenly left to right'), bar('spread-y', '⋮', 'Space evenly top to bottom')),
     h('div', { class: 'align-row' },
-      h('button', { type: 'button', class: 'btn btn-small', onclick: groupSelection, title: 'Ctrl+G' }, '⛓ Group'),
+      h('button', { type: 'button', class: 'btn btn-small', onclick: groupSelection, title: 'Ctrl+G' }, 'Group'),
       groupBlocks().some((x) => x.group) ? h('button', { type: 'button', class: 'btn btn-small', onclick: ungroupSelection, title: 'Ctrl+Shift+G' }, 'Ungroup') : null),
   ));
 }
@@ -809,7 +809,7 @@ function renderInspectorBase() {
 
   // Actions
   root.append(h('div', { class: 'action-row' },
-    canShade(b) && !isShaded(state.scene, b) ? h('button', { type: 'button', class: 'btn btn-small btn-bloom', onclick: shadeSelected, title: 'Add a shadow, a highlight and a crisp outline' }, '✨ Add shading') : null,
+    canShade(b) && !isShaded(state.scene, b) ? h('button', { type: 'button', class: 'btn btn-small', onclick: shadeSelected, title: 'Add a shadow, a highlight and a crisp outline' }, 'Add shading') : null,
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => duplicate(b) }, 'Duplicate'),
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => moveLayer(b, 1) }, 'Bring forward'),
     h('button', { type: 'button', class: 'btn btn-small', onclick: () => moveLayer(b, -1) }, 'Send backward'),
@@ -874,7 +874,7 @@ function renderLayers() {
           moveBlock(state.scene, b.id, e.key === 'ArrowUp' ? i + 1 : i - 1);
           refreshAll(); commit(`Moved ${b.name} ${e.key === 'ArrowUp' ? 'up' : 'down'}.`, `Reordered ${b.name}`);
           $(`#layers [data-id="${CSS.escape(b.id)}"] .layer-name`)?.focus();
-        } }, b.name, b.group ? h('span', { class: 'layer-chain', title: 'Grouped' }, ' ⛓') : null),
+        } }, b.name, b.group ? h('span', { class: 'layer-chain', title: 'Grouped' }, 'G') : null),
       h('button', { type: 'button', class: 'icon-btn', 'aria-label': `${b.locked ? 'Unlock' : 'Lock'} ${b.name}`, 'aria-pressed': b.locked, html: b.locked ? ICON_LOCK : ICON_UNLOCK, onclick: () => { b.locked = !b.locked; refreshAll(); commit(); } }),
     );
     li.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', b.id); e.dataTransfer.effectAllowed = 'move'; li.classList.add('is-dragging'); });
@@ -1699,11 +1699,11 @@ function renderGuide() {
   const actions = $('#guide-actions');
   if (g.finished) {
     $('#guide-count').textContent = 'All done';
-    $('#guide-title').textContent = `You drew ${g.r.drew}! 🎉`;
+    $('#guide-title').textContent = `You drew ${g.r.drew}.`;
     $('#guide-text').textContent = 'Press Bloom to watch it grow, save it as a picture, or keep changing anything you like: every part is still a block you can click.';
     actions.innerHTML = '';
     actions.append(
-      el('button', { class: 'btn btn-bloom', type: 'button', onclick: () => bloom(), text: '▶ Bloom it' }),
+      el('button', { class: 'btn btn-bloom', type: 'button', onclick: () => bloom(), text: 'Play bloom' }),
       el('button', { class: 'btn', type: 'button', onclick: () => exportPNG(), text: 'Save PNG' }),
       el('button', { class: 'btn btn-primary', type: 'button', onclick: exitGuide, text: 'Done' }),
     );
@@ -1715,7 +1715,7 @@ function renderGuide() {
   $('#guide-text').textContent = st.text;
   actions.innerHTML = '';
   if (g.step > 0) actions.append(el('button', { class: 'btn', type: 'button', onclick: () => guideMove(-1), text: '← Back' }));
-  if (!g.stepDone) actions.append(el('button', { class: 'btn btn-primary', id: 'guide-do', type: 'button', onclick: () => guideDo(), text: 'Do this step ✨' }));
+  if (!g.stepDone) actions.append(el('button', { class: 'btn btn-primary', id: 'guide-do', type: 'button', onclick: () => guideDo(), text: 'Do this step' }));
   actions.append(el('button', { class: g.stepDone ? 'btn btn-primary' : 'btn', id: 'guide-next', type: 'button', onclick: () => guideMove(1), text: g.step === n - 1 ? 'Finish →' : 'Next →' }));
   if (!g.stepDone && g.step < n - 1) actions.append(el('button', { class: 'btn btn-quiet', type: 'button', onclick: () => guideDo(true), text: 'Finish it for me' }));
   if (g.stepDone) $('#guide-next').focus();
