@@ -95,8 +95,14 @@ export function normalizeScene(input) {
       if (typeof nb.group !== 'string') nb.group = '';
       if (nb.type === 'text') nb.text = typeof nb.text === 'string' ? nb.text.slice(0, 200) : 'Hello!';
       if (nb.type === 'stroke') {
-        const pts = Array.isArray(nb.points) ? nb.points.filter((q) => Array.isArray(q) && Number.isFinite(q[0]) && Number.isFinite(q[1])) : [];
-        nb.points = pts.length >= 2 ? pts.slice(0, 600) : clone(SHAPES.stroke.defaults.points);
+        // Keep valid points and single null "pen lifts" between them; drop anything else.
+        const pts = [];
+        for (const q of Array.isArray(nb.points) ? nb.points.slice(0, 20000) : []) {
+          if (q === null) { if (pts.length && pts[pts.length - 1] !== null) pts.push(null); continue; }
+          if (Array.isArray(q) && Number.isFinite(q[0]) && Number.isFinite(q[1])) pts.push(q);
+        }
+        while (pts.length && pts[pts.length - 1] === null) pts.pop();
+        nb.points = pts.filter(Boolean).length >= 2 ? pts : clone(SHAPES.stroke.defaults.points);
       }
       return nb;
     });

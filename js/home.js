@@ -336,3 +336,10 @@ if (motion && gsap && window.SplitText) {
   blurIn($('#hero-title'));
   reveal(document.querySelectorAll('.bento-card'));
 }
+
+// Download section: highlight the visitor's own computer.
+(() => {
+  const ua = (navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '').toLowerCase();
+  const os = /win/.test(ua) ? 'windows' : /mac|iphone|ipad/.test(ua) ? 'mac' : /linux|x11|cros/.test(ua) && !/android/.test(navigator.userAgent.toLowerCase()) ? 'linux' : '';
+  if (os) document.querySelector(`.dl-card[data-os="${os}"]`)?.classList.add('is-yours');
+})();

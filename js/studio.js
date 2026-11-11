@@ -19,6 +19,10 @@ import { TEMPLATES, getTemplate } from './templates.js';
 import { PALETTES } from './color.js';
 import { encodeScene, decodeScene } from './share.js';
 import { clone, esc, uid, clamp } from './util.js';
+import { setupCodePanel } from './code-panel.js';
+import { createPalette } from './palette.js';
+import { setTheme } from './theme.js';
+import { EXAMPLES as CODE_EXAMPLES } from './instructions.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const canvas = $('#canvas');
@@ -48,6 +52,7 @@ const state = {
   bucket: false,     // paint-bucket tool
   trace: null,       // { url, opacity } photo to trace over (never saved or exported)
   stopBloom: null,   // set while the bloom animation plays
+  codePreview: null, // { blocks, background, turtle } while the Code tab previews a program
 };
 
 const blocks = () => state.scene.blocks;
@@ -222,7 +227,7 @@ function draw() {
   canvas.style.aspectRatio = `${W()} / ${H()}`;
   canvas.setAttribute('viewBox', `${r1(v.x)} ${r1(v.y)} ${r1(W() / v.z)} ${r1(H() / v.z)}`);
   const t0 = performance.now();
-  canvas.innerHTML = renderSceneInner(viewScene(), { prefix: 's-', reveal: state.reveal }) + ghostMarkup() + traceMarkup();
+  canvas.innerHTML = renderSceneInner(viewScene(), { prefix: 's-', reveal: state.reveal }) + ghostMarkup() + traceMarkup() + turtleMarkup();
   drawOverlay();
   updateStatus();
   updateMonitor(performance.now() - t0);
@@ -236,7 +241,18 @@ function traceMarkup() {
 
 /** The scene as shown: the real drawing plus any stroke the pen is drawing right now. */
 function viewScene() {
+  const cp = state.codePreview;
+  if (cp) return { ...state.scene, background: cp.background ? { ...state.scene.background, ...cp.background } : state.scene.background, blocks: [...blocks(), ...cp.blocks] };
   return state.penPreview ? { ...state.scene, blocks: [...blocks(), state.penPreview] } : state.scene;
+}
+
+/** Where the Code tab's pen ended up: a small arrow, so people can see position and direction. */
+function turtleMarkup() {
+  const t = state.codePreview?.turtle;
+  if (!t) return '';
+  const x = W() / 2 + t.x, y = H() / 2 - t.y, s = Math.max(W(), H()) / 60;
+  return `<g class="code-turtle" transform="translate(${r1(x)} ${r1(y)}) rotate(${r1(t.dir)})" pointer-events="none" aria-hidden="true">`
+    + `<path d="M0 ${r1(-s * 1.3)} L${r1(s * 0.8)} ${r1(s * 0.8)} L0 ${r1(s * 0.3)} L${r1(-s * 0.8)} ${r1(s * 0.8)} Z" fill="#4c8dff" stroke="#fff" stroke-width="${r1(s / 6)}" stroke-linejoin="round"/></g>`;
 }
 
 /** Draw along: the parts not drawn yet, faint on top, like tracing paper. */
@@ -606,8 +622,29 @@ function renderShelf() {
 }
 
 let showTab = () => {};
+let codePanel = null;
+function setupCode() {
+  codePanel = setupCodePanel($('#panel-code'), {
+    h, download, announce,
+    scene: () => state.scene,
+    setPreview(list, background, turtle) {
+      state.codePreview = list ? { blocks: list, background, turtle } : null;
+      draw();
+    },
+    add(list, background, replace) {
+      state.codePreview = null;
+      if (replace) state.scene.blocks = [];
+      if (background) state.scene.background = { ...state.scene.background, ...background };
+      blocks().push(...list);
+      refreshAll();
+      selectMany(list);
+      commit(`${replace ? 'Replaced the drawing with' : 'Added'} ${list.length} part${list.length === 1 ? '' : 's'} from your code. They are normal blocks now: drag, recolor or undo.`, 'Code drawing');
+      codePanel.refresh();
+    },
+  });
+}
 function setupTabs() {
-  const tabs = [$('#tab-blocks'), $('#tab-guide'), $('#tab-templates'), $('#tab-helper')];
+  const tabs = [$('#tab-blocks'), $('#tab-guide'), $('#tab-templates'), $('#tab-code'), $('#tab-helper')];
   const show = (tab) => {
     tabs.forEach((t) => {
       const on = t === tab;
@@ -616,6 +653,7 @@ function setupTabs() {
       $('#' + t.getAttribute('aria-controls')).hidden = !on;
     });
     if (tab.id === 'tab-helper') renderHelper();
+    if (tab.id === 'tab-code') codePanel?.shown(); else codePanel?.hidden();
   };
   showTab = (id) => show($('#' + id));
   tabs.forEach((t, i) => {
@@ -1072,6 +1110,8 @@ document.addEventListener('keydown', (e) => {
   const mod = e.ctrlKey || e.metaKey;
   const key = e.key;
   if ($('#help-dialog').open) return;
+  if (mod && key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); return; }
+  if (palette?.isOpen) return;
 
   if (mod && key.toLowerCase() === 'z' && !typing) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
   if (mod && key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
@@ -1152,6 +1192,167 @@ document.addEventListener('keydown', (e) => {
   }
   if (changed) { e.preventDefault(); draw(); commitSoon(); refreshPanelsSoon(); updateHistoryButtons(); }
 });
+
+// ---------- copy, cut and paste ----------
+// Parts are copied as JSON text, so they can be pasted into another tab, another
+// drawing, or even sent in a chat and pasted back. An internal copy is kept too, for
+// browsers that block clipboard access.
+const CLIP_TAG = 'artful-drawing/blocks';
+let clip = null, pasteCount = 0;
+
+function copySelection(cut = false) {
+  const list = groupBlocks();
+  if (!list.length) { announce('Select something to copy first.'); return; }
+  clip = clone(list); pasteCount = 0;
+  const text = JSON.stringify({ [CLIP_TAG]: 1, blocks: list });
+  navigator.clipboard?.writeText(text).catch(() => { /* the internal copy still works */ });
+  if (cut) {
+    const ids = new Set(list.map((b) => b.id));
+    state.scene.blocks = blocks().filter((b) => !ids.has(b.id));
+    blocks().forEach((o) => { if (ids.has(o.clipTo)) o.clipTo = ''; });
+    select(null); refreshAll();
+    commit(`Cut ${list.length} part${list.length === 1 ? '' : 's'}. Ctrl+V puts ${list.length === 1 ? 'it' : 'them'} back.`, 'Cut');
+  } else announce(`Copied ${list.length} part${list.length === 1 ? '' : 's'}. Ctrl+V pastes, here or in another drawing.`);
+}
+
+function pasteBlocks(list) {
+  if (!Array.isArray(list) || !list.length) return false;
+  pasteCount++;
+  const ids = new Map(list.map((b) => [b.id, uid()]));
+  const groups = new Map();
+  const fresh = normalizeScene({ ...state.scene, blocks: list.map((b) => ({
+    ...clone(b), id: ids.get(b.id) || uid(),
+    x: (Number(b.x) || 0) + 24 * pasteCount, y: (Number(b.y) || 0) + 24 * pasteCount,
+    group: b.group ? (groups.get(b.group) || groups.set(b.group, uid()).get(b.group)) : '',
+    clipTo: ids.get(b.clipTo) || '', locked: false, visible: true,
+  })) }).blocks;
+  blocks().push(...fresh);
+  refreshAll();
+  selectMany(fresh);
+  commit(`Pasted ${fresh.length} part${fresh.length === 1 ? '' : 's'}.`, 'Paste');
+  return true;
+}
+
+document.addEventListener('copy', (e) => {
+  if (isTyping(e.target) || !groupBlocks().length) return;
+  e.preventDefault();
+  clip = clone(groupBlocks()); pasteCount = 0;
+  e.clipboardData.setData('text/plain', JSON.stringify({ [CLIP_TAG]: 1, blocks: clip }));
+  announce(`Copied ${clip.length} part${clip.length === 1 ? '' : 's'}.`);
+});
+document.addEventListener('cut', (e) => {
+  if (isTyping(e.target) || !groupBlocks().length) return;
+  e.preventDefault();
+  e.clipboardData.setData('text/plain', JSON.stringify({ [CLIP_TAG]: 1, blocks: groupBlocks() }));
+  copySelection(true);
+});
+document.addEventListener('paste', (e) => {
+  if (isTyping(e.target)) return;
+  const data = e.clipboardData;
+  const image = [...(data?.files || [])].find((f) => f.type.startsWith('image/'));
+  if (image) {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.trace = { url: reader.result, opacity: Number($('#trace-opacity')?.value || 0.4) };
+      const opts = $('#trace-opts'); if (opts) opts.hidden = false;
+      draw(); announce('Pasted a photo to trace over. Pick the Pen and draw on top; the photo is never saved or exported.');
+    };
+    reader.readAsDataURL(image);
+    return;
+  }
+  const text = data?.getData('text/plain') || '';
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && parsed[CLIP_TAG]) { e.preventDefault(); pasteBlocks(parsed.blocks); return; }
+    if (parsed && Array.isArray(parsed.blocks)) { e.preventDefault(); pasteBlocks(parsed.blocks); return; } // a whole project file
+  } catch { /* not ours */ }
+  if (clip) { e.preventDefault(); pasteBlocks(clip); }
+});
+function isTyping(t) {
+  return t && (t.isContentEditable || (['INPUT', 'SELECT', 'TEXTAREA'].includes(t.tagName) && t.type !== 'checkbox' && t.type !== 'range'));
+}
+
+// ---------- command palette (Ctrl+K) ----------
+let palette = null;
+function paletteCommands() {
+  const cmds = [];
+  const add = (group, label, run, hint, keywords) => cmds.push({ group, label, run, hint, keywords });
+  const sel = groupBlocks();
+  const b = selected();
+  if (sel.length) {
+    add('Selection', `Copy ${sel.length > 1 ? `${sel.length} parts` : b.name}`, () => copySelection(), 'Ctrl+C');
+    add('Selection', 'Cut', () => copySelection(true), 'Ctrl+X');
+    add('Selection', 'Duplicate', () => { if (sel.length === 1) duplicate(b); else pasteBlocks(clone(sel)); }, 'Ctrl+D');
+    add('Selection', 'Delete', () => {
+      const ids = new Set(sel.map((x) => x.id));
+      state.scene.blocks = blocks().filter((x) => !ids.has(x.id)); select(null); refreshAll(); commit('Deleted. Undo brings it back.');
+    }, 'Del', 'remove erase');
+    if (sel.length === 1) {
+      add('Selection', b.repeats.some((r) => r.mode === 'mirror') ? 'Remove mirror' : 'Add mirror', () => toggleMirror(b), 'M', 'symmetry reflect');
+      add('Selection', 'Bring forward', () => moveLayer(b, 1), ']', 'layer order front');
+      add('Selection', 'Send backward', () => moveLayer(b, -1), '[', 'layer order back');
+      add('Selection', 'Hide', () => { b.visible = false; state.sel = null; refreshAll(); commit(`${b.name} hidden.`); }, 'H');
+      if (canShade(b) && !isShaded(b)) add('Selection', 'Add shading (light and shadow)', shadeSelected, '', 'shadow 3d depth');
+    }
+    if (sel.length > 1) {
+      add('Selection', 'Group', groupSelection, 'Ctrl+G');
+      for (const [how, label] of [['left', 'Align left edges'], ['center', 'Align centers (left to right)'], ['right', 'Align right edges'], ['top', 'Align top edges'], ['middle', 'Align middles (top to bottom)'], ['bottom', 'Align bottom edges']]) add('Arrange', label, () => alignGroup(how), '', 'line up');
+    }
+    if (sel.some((x) => x.group)) add('Selection', 'Ungroup', ungroupSelection, 'Ctrl+Shift+G');
+    add('Selection', 'Select nothing', () => select(null), 'Esc');
+  }
+  if (clip) add('Edit', `Paste ${clip.length} part${clip.length === 1 ? '' : 's'}`, () => pasteBlocks(clip), 'Ctrl+V');
+  add('Edit', 'Undo', () => undo(), 'Ctrl+Z');
+  add('Edit', 'Redo', () => redo(), 'Ctrl+Shift+Z');
+  add('Edit', 'Select everything', () => selectMany(blocks().filter((x) => x.visible && !x.locked)), 'Ctrl+A', 'all');
+  add('Edit', 'Shuffle colors', shuffleColors, '', 'random palette recolor');
+  for (const [id, label, key] of [['select', 'Select tool', 'V'], ['pen', 'Pen (draw freehand)', 'P'], ['eraser', 'Eraser', 'E'], ['stamp', 'Stamp (scatter stars, hearts…)', 'S'], ['picker', 'Color picker', 'I'], ['fill', 'Paint bucket', 'K']]) {
+    add('Tools', label, () => setTool(id), key, id === 'pen' ? 'brush draw line' : '');
+  }
+  for (const type of Object.keys(SHAPES)) {
+    if (type === 'stroke') continue;
+    add('Add a block', `Add ${SHAPES[type].label.toLowerCase()}`, () => addBlock(type), '', `${SHAPES[type].category} shape new insert`);
+  }
+  for (const t of TEMPLATES) add('Open a picture', `Open ${t.name}`, () => loadScene(t.build(), `Opened ${t.name}. Undo brings back your previous picture.`), '', 'template starter example');
+  for (const r of RECIPES) add('Draw along', `Draw along: ${r.name}`, () => { showTab('tab-guide'); startGuide(r.id); }, '', 'guide tutorial step lesson');
+  add('Code', 'Open the Code tab', () => { showTab('tab-code'); $('#code-editor')?.focus(); }, '', 'program instructions turtle logo script cpu');
+  CODE_EXAMPLES.forEach(([name], i) => add('Code', `Code example: ${name}`, () => {
+    showTab('tab-code');
+    const sel = document.querySelector('.code-examples');
+    if (sel) { sel.value = String(i); sel.dispatchEvent(new Event('change')); }
+  }, '', 'program instructions turtle'));
+  for (const [id, label] of [['tab-blocks', 'Show the Blocks shelf'], ['tab-guide', 'Show Draw along'], ['tab-templates', 'Show Pictures'], ['tab-helper', 'Show the Helper (suggestions)']]) add('Panels', label, () => showTab(id));
+  add('View', state.guides ? 'Hide guides' : 'Show guides', () => { state.guides = !state.guides; $('#opt-guides').checked = state.guides; draw(); }, 'G');
+  add('View', 'Zoom in', () => zoomStep(1.25), 'Ctrl+=');
+  add('View', 'Zoom out', () => zoomStep(0.8), 'Ctrl+−');
+  add('View', 'Fit to screen', () => setZoom(1), 'Ctrl+0', 'reset zoom 100');
+  add('View', 'Play the bloom animation', () => bloom(), 'B', 'animate');
+  for (const [id, label] of [['studio', 'Dark'], ['daylight', 'Light'], ['night', 'Playful']]) add('View', `Theme: ${label}`, () => setTheme(id), '', 'color mode appearance');
+  add('File', 'Save project file', saveProject, 'Ctrl+S', 'json download');
+  add('File', 'Open project file…', () => $('#file-input').click(), '', 'load import');
+  add('File', 'Export PNG image', () => exportPNG(), '', 'save picture download');
+  add('File', 'Export sticker (transparent PNG)', () => exportPNG(2, true), '', 'save picture download');
+  add('File', 'Export SVG (sharp at any size)', exportSVG, '', 'vector save download');
+  add('File', 'Export video of the drawing blooming', exportVideo, '', 'webm animation');
+  add('File', 'Copy share link', copyShareLink, '', 'url send');
+  add('File', 'New blank canvas', () => loadScene(blankScene(), 'Blank canvas. Undo brings back your previous picture.'), '', 'clear empty start over');
+  add('Help', 'Keyboard shortcuts', openHelp, '?');
+  add('Help', 'Take the 1-minute tour', () => startTour(), '', 'tutorial intro');
+  add('Help', 'Open the manual', () => window.open('manual.html', '_blank', 'noopener'), '', 'docs documentation guide help reference');
+  return cmds;
+}
+// The desktop app's menus run studio commands by name (see electron/main.cjs).
+window.artfulCommand = (label) => {
+  if (label === 'Command palette') { openPalette(); return true; }
+  const c = paletteCommands().find((x) => x.label === label);
+  if (c) c.run();
+  return !!c;
+};
+function openPalette(prefill) {
+  palette ||= createPalette({ h, getCommands: paletteCommands });
+  palette.open(prefill);
+}
 
 // ---------- files, export, sharing ----------
 function download(blob, filename) {
@@ -1244,6 +1445,7 @@ function wire() {
   $('#btn-bloom').addEventListener('click', () => bloom());
   $('#btn-share').addEventListener('click', copyShareLink);
   $('#btn-help').addEventListener('click', openHelp);
+  $('#btn-palette').addEventListener('click', () => openPalette());
   $('#opt-guides').addEventListener('change', (e) => { state.guides = e.target.checked; draw(); });
   $('#opt-snap').addEventListener('change', (e) => { state.snap = e.target.checked; });
   const menu = $('#save-menu');
@@ -1820,6 +2022,13 @@ function quickStart(kind) {
   if (kind === 'color') { showTab('tab-guide'); startColoring('butterfly'); }
   if (kind === 'picture') { loadScene(getTemplate('butterfly').build(), 'Opened the butterfly. Click any part to change it.'); showTab('tab-templates'); }
   if (kind === 'blank') { loadScene(blankScene(), 'A blank canvas. Pick a shape from the shelf.'); showTab('tab-blocks'); }
+  if (kind === 'code') {
+    loadScene(blankScene(), 'A blank canvas for your code.');
+    showTab('tab-code');
+    const pick = document.querySelector('.code-examples');
+    if (pick) { pick.value = '0'; pick.dispatchEvent(new Event('change')); }
+    $('#code-editor')?.focus();
+  }
 }
 
 function wireCreative() {
@@ -1898,11 +2107,15 @@ async function init() {
   if (noSaved) { try { firstVisit = !localStorage.getItem(WELCOMED_KEY); } catch { firstVisit = false; } }
   renderShelf();
   renderGuidePanel();
+  const sharedCode = params.get('code');
+  if (sharedCode) { try { localStorage.setItem('artful-drawing:code:v1', sharedCode); } catch { /* still opens the tab */ } }
+  setupCode();
   setupTabs();
   wire();
   wireCreative();
   refreshAll();
   if (msg) announce(msg);
+  if (sharedCode) { showTab('tab-code'); announce('Opened the code in the Code tab. Change any number and watch the preview; Add to drawing keeps it.'); }
   if (params.get('guide') && getRecipe(params.get('guide'))) startGuide(params.get('guide'));
   else if (params.get('color') && getTemplate(params.get('color'))) startColoring(params.get('color'));
   else if (params.get('start')) quickStart(params.get('start'));

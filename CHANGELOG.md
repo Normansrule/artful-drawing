@@ -2,6 +2,19 @@
 
 All notable changes to artful drawing. Each version is one release zip.
 
+## 3.0.0
+- **Draw with code.** A new Code tab: write instructions for a pen (`move`, `turn`, `repeat`, `if`, shapes, colors, brushes, symmetry, randomness with seeds) with a live preview as you type, line numbers, friendly error messages with suggestions, ten examples, and a click-to-insert reference of all 36 instructions. Results become normal, editable blocks.
+- **Make your own instructions.** `define name inputs [ … ]` creates new instructions that work like built-in ones, including ones that call themselves. **My instructions** saves them to a personal library that works in every drawing (edit, download, remove, reset).
+- **Command palette** (`Ctrl+K`, or Search in the top bar): fuzzy search over every tool, block, picture, guide, code example, export, panel and theme, with shortcuts shown.
+- **Copy, cut and paste** parts (`Ctrl+C` / `X` / `V`), between drawings, tabs and the desktop app; pasting a photo lays it under the canvas for tracing.
+- **Desktop apps** for Windows (installer and portable), macOS (Apple chip and Intel) and Linux (AppImage, .deb, .tar.gz), built with Electron 44. Fully offline, real menus, Save dialogs, remembers its window. GitHub Actions builds and publishes them when a `v*` tag is pushed.
+- **Manual** (`manual.html`): every tool and shortcut, nine runnable code examples with "Open in the studio", a language reference generated from the code, desktop install notes, privacy and fixes, with instant search (`/`).
+- Home page: a Code section and a Download section that highlights your computer.
+- Pen strokes can hold several separate lines (pen lifts), which keeps code drawings to a few blocks.
+- Fixed: Layers rows were misaligned (eye and lock icons wrapped onto separate lines); the selected layer's name was hard to read in the Light theme; the shelf could scroll sideways on Windows and Linux.
+- Thin, themed scrollbars; the shelf's tabs fit five across.
+- `docs/INSTRUCTIONS.md` explains the language and how the interpreter works; 47 tests (up from 28).
+
 ## 2.3.0
 - **A more professional look.** New default theme "Studio" (graphite dark) and a neutral "Daylight" theme: Inter type, one blue accent, thin borders, small radii, a neutral pasteboard around the canvas, and no decorative motion. The playful "Night" theme is still in the theme switcher.
 - Plainer interface wording without emoji; the home page drops floating stickers, click sparks and tilting cards, and tones down the ink background.

@@ -339,3 +339,30 @@
 .way-num { width: 2.6rem; height: 2.6rem; border-radius: 12px; display: grid; place-items: center; font: 800 1.2rem/1 var(--display); color: #fff; background: linear-gradient(135deg, #ff4f87, #8b6bff); box-shadow: 0 10px 24px -8px rgba(255, 79, 135, 0.9); }
 @media (max-width: 1180px) { .trio { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .trio { grid-template-columns: 1fr; } }
+
+/* ---------- code teaser ---------- */
+.code-teaser-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+.code-teaser code { font-family: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace; font-size: 0.9em; padding: 0.05em 0.35em; border-radius: 5px; background: var(--glass); border: 1px solid var(--glass-line); }
+.code-card {
+  margin: 0; padding: 1.5rem 1.6rem; border-radius: 20px; background: var(--glass); border: 1px solid var(--glass-line);
+  font: 500 0.92rem/1.75 ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace; color: var(--on-night); overflow-x: auto;
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.8);
+}
+.code-card .c { color: var(--on-night-2); font-style: italic; }
+.code-card b { color: #c678dd; }
+.code-card i { font-style: normal; color: var(--pink); font-weight: 600; }
+
+/* ---------- download ---------- */
+.dl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 2.5rem; }
+.dl-card { display: grid; gap: 0.35rem; align-content: start; padding: 1.6rem; border-radius: 20px; background: var(--glass); border: 1px solid var(--glass-line); transition: border-color 200ms, transform 200ms; }
+.dl-card svg { width: 30px; height: 30px; color: var(--on-night); opacity: 0.9; margin-bottom: 0.4rem; }
+.dl-card h3 { font: 800 1.4rem/1.1 var(--display); margin: 0; }
+.dl-card p { margin: 0 0 0.8rem; color: var(--on-night-2); font-size: 0.92rem; }
+.dl-main { justify-self: start; text-decoration: none; font-weight: 650; padding: 0.6rem 1rem; border-radius: 10px; background: var(--glass); border: 1px solid var(--glass-line); color: var(--on-night); }
+.dl-main:hover { border-color: var(--pink); }
+.dl-alt { font-size: 0.85rem; color: var(--on-night-2); margin-top: 0.3rem; }
+.dl-card.is-yours { border-color: var(--pink); transform: translateY(-4px); }
+.dl-card.is-yours .dl-main { background: var(--pink); border-color: var(--pink); color: #fff; }
+.dl-card.is-yours h3::after { content: 'Your computer'; display: inline-block; vertical-align: middle; margin-left: 0.6rem; font: 650 0.65rem/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.5rem; border-radius: 99px; background: color-mix(in srgb, var(--pink) 20%, transparent); color: var(--pink); }
+.dl-note { margin-top: 1.5rem; color: var(--on-night-2); font-size: 0.9rem; }
+@media (max-width: 980px) { .code-teaser-grid, .dl-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,131 @@
+/* The Code tab: an editor for drawing instructions. Uses the theme's variables, so it
+   follows Studio (dark) and Daylight (light) without extra rules. */
+
+:root { --mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace; }
+
+.studio { transition: grid-template-columns 0.25s ease; }
+body.code-wide .studio { grid-template-columns: 470px minmax(0, 1fr) 330px; }
+@media (max-width: 1180px) { body.code-wide .studio { grid-template-columns: 400px minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .studio { transition: none; } }
+
+/* five tabs share the shelf: let them shrink evenly */
+.tabs { flex-wrap: nowrap; }
+.tabs [role='tab'] { flex: 1 1 auto; min-width: 0; padding-left: 0.3rem; padding-right: 0.3rem; white-space: nowrap; }
+.pro .tabs [role='tab'] { font-size: 0.78rem; }
+.tabs .tab-badge { margin-left: 0.2rem; }
+
+.code-head h2 { margin: 0 0 0.2rem; font-size: 1.05rem; }
+.code-head .note { margin: 0 0 0.7rem; }
+.code-bar { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.code-examples { flex: 1; min-width: 0; font: inherit; font-size: 0.82rem; padding: 0.3rem 0.4rem; border-radius: var(--radius-s, 6px); border: 1px solid var(--line); background: var(--tint); color: var(--ink); }
+.code-bar .check { font-size: 0.8rem; white-space: nowrap; }
+.code-bar .icon-btn { font-size: 1rem; line-height: 1; padding: 0.25rem 0.45rem; border: 1px solid var(--line); background: var(--tint); }
+.code-bar .icon-btn[aria-pressed='true'] { border-color: var(--pink); color: var(--pink); }
+
+.code-wrap {
+  display: grid; grid-template-columns: auto minmax(0, 1fr);
+  border: 1px solid var(--line); border-radius: var(--radius-m, 8px); overflow: hidden;
+  background: color-mix(in srgb, var(--paper) 70%, var(--panel));
+}
+.code-wrap:focus-within { border-color: var(--pink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pink) 22%, transparent); }
+.code-gutter, .code-editor { font: 500 12.5px/1.6 var(--mono); tab-size: 2; }
+.code-gutter {
+  margin: 0; padding: 0.6rem 0.45rem 0.6rem 0.6rem; text-align: right; color: var(--ink-2); opacity: 0.7;
+  overflow: hidden; user-select: none; border-right: 1px solid var(--line); min-width: 2.4rem;
+  height: 22rem; box-sizing: border-box;
+}
+.code-gutter span { display: block; }
+.code-gutter span.err { color: #fff; background: #e5484d; border-radius: 3px; opacity: 1; margin-right: -0.2rem; padding-right: 0.2rem; }
+.code-editor {
+  display: block; width: 100%; height: 22rem; box-sizing: border-box; resize: vertical;
+  margin: 0; padding: 0.6rem 0.7rem; border: 0; outline: 0; background: transparent; color: var(--ink);
+  white-space: pre; overflow: auto; caret-color: var(--pink);
+}
+.code-editor::selection { background: color-mix(in srgb, var(--pink) 30%, transparent); }
+body.code-wide .code-gutter, body.code-wide .code-editor { height: 30rem; }
+
+.code-status { margin: 0.5rem 0 0.6rem; font-size: 0.8rem; padding: 0.45rem 0.6rem; border-radius: var(--radius-s, 6px); background: color-mix(in srgb, var(--teal) 12%, transparent); border-left: 3px solid var(--teal); color: var(--ink); }
+.code-status.bad { background: color-mix(in srgb, #e5484d 13%, transparent); border-left-color: #e5484d; }
+.code-status strong { font-weight: 650; }
+.muted { color: var(--ink-2); }
+.code-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.4rem 0; }
+.code-actions .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.code-lib, .code-ref-wrap { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.code-lib h3, .code-ref-wrap h3 { margin: 0; font-size: 0.9rem; font-weight: 650; }
+.code-lib-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.lib-list { list-style: none; margin: 0.5rem 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.lib-list li { display: inline-flex; align-items: stretch; border: 1px solid var(--line); border-radius: 999px; background: var(--tint); overflow: hidden; }
+.lib-list li.muted { border: 0; background: none; font-size: 0.8rem; }
+.lib-name { border: 0; background: none; color: var(--ink); font: inherit; font-size: 0.8rem; padding: 0.2rem 0.3rem 0.2rem 0.65rem; cursor: pointer; }
+.lib-name:hover { color: var(--pink); }
+.lib-name code { font-family: var(--mono); font-weight: 600; }
+.lib-del { border: 0; background: none; padding: 0 0.55rem 0 0.25rem; color: var(--ink-2); cursor: pointer; font-size: 0.95rem; }
+.lib-del:hover { color: #e5484d; }
+.code-lib details summary, .code-ref-group summary { cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--ink-2); padding: 0.3rem 0; }
+.code-lib details[open] summary, .code-ref-group[open] summary { color: var(--ink); }
+.code-editor-lib { height: 14rem; border: 1px solid var(--line); border-radius: var(--radius-s, 6px); background: color-mix(in srgb, var(--paper) 70%, var(--panel)); }
+
+.code-ref-group { border-bottom: 1px solid var(--line); }
+.code-ref-group dl { margin: 0 0 0.6rem; display: grid; gap: 0.15rem 0; }
+.code-ref-group dt { margin-top: 0.45rem; }
+.code-ref-group dd { margin: 0; font-size: 0.78rem; color: var(--ink-2); line-height: 1.45; }
+.code-ref-group code, .code-head code, .code-ref-wrap code { font-family: var(--mono); font-size: 0.78rem; }
+.ref-insert { border: 1px solid var(--line); background: var(--tint); color: var(--ink); border-radius: var(--radius-s, 4px); padding: 0.12rem 0.4rem; cursor: pointer; text-align: left; }
+.ref-insert:hover { border-color: var(--pink); color: var(--pink); }
+.swatch-name { white-space: nowrap; }
+.swatch-name i { display: inline-block; width: 0.65em; height: 0.65em; border-radius: 50%; margin-right: 0.25em; vertical-align: -0.02em; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); }
+
+.code-turtle { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)); }
+
+/* ---------- command palette ---------- */
+.btn-cmd { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--ink-2); min-width: 9.5rem; justify-content: flex-start; }
+.btn-cmd span { margin-right: auto; }
+.btn-cmd kbd { font-size: 0.68rem; padding: 0 0.3rem; opacity: 0.85; }
+@media (max-width: 1320px) { .btn-cmd { min-width: 0; } .btn-cmd kbd { display: none; } }
+
+.palette {
+  width: min(640px, calc(100vw - 2rem)); max-height: min(70vh, 560px); margin: 12vh auto auto; padding: 0;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink);
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+  overflow: hidden;
+}
+.palette[open] { animation: palette-in 0.14s ease-out; }
+@keyframes palette-in { from { opacity: 0; transform: translateY(-6px) scale(0.985); } }
+@media (prefers-reduced-motion: reduce) { .palette[open] { animation: none; } }
+.palette::backdrop { background: rgba(8, 9, 12, 0.45); backdrop-filter: blur(2px); }
+.palette-box { display: flex; flex-direction: column; max-height: min(70vh, 560px); }
+.palette-input {
+  font: 500 1rem/1.4 var(--body); padding: 1rem 1.1rem; border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); outline: none;
+}
+.palette-input::placeholder { color: var(--ink-2); }
+.palette-list { list-style: none; margin: 0; padding: 0.35rem; overflow-y: auto; flex: 1; }
+.palette-group { font-size: 0.68rem; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); padding: 0.7rem 0.7rem 0.3rem; }
+.palette-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.7rem; border-radius: 7px; cursor: pointer; font-size: 0.9rem; }
+.palette-item[aria-selected='true'] { background: color-mix(in srgb, var(--pink) 16%, transparent); box-shadow: inset 2px 0 0 var(--pink); }
+.palette-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.palette-where { font-size: 0.75rem; color: var(--ink-2); }
+.palette-hint { font-size: 0.7rem; }
+.palette-empty { padding: 1.4rem; text-align: center; color: var(--ink-2); font-size: 0.9rem; }
+.palette-foot { display: flex; gap: 1rem; margin: 0; padding: 0.5rem 1rem; border-top: 1px solid var(--line); font-size: 0.72rem; color: var(--ink-2); }
+.palette-foot kbd { font-size: 0.66rem; margin-right: 0.15rem; }
+.code-lib-head h3 { white-space: nowrap; }
+.pro .layer.is-selected .layer-name, .pro .layer.is-selected .icon-btn { color: var(--ink); }
+
+/* thin, themed scrollbars (desktop apps on Windows and Linux show chunky ones otherwise) */
+.pro .shelf, .pro .inspector, .pro .code-editor, .pro .palette-list, .pro .stage { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ink) 22%, transparent) transparent; }
+.shelf { overflow-x: hidden; }
+.code-lib-head { flex-wrap: wrap; }
+@media (max-width: 1320px) { .btn-cmd span { display: none; } .btn-cmd { padding-inline: 0.6rem; } }
+/* phones: the stage never pushes the page sideways (the options bar scrolls instead) */
+@media (max-width: 760px) {
+  .stage { min-width: 0; max-width: 100vw; overflow-x: hidden; }
+  .stage-bar, .stage-bar > * { min-width: 0; max-width: 100%; }
+}
+/* the narrower two-column studio (250px shelf) */
+@media (max-width: 1180px) {
+  .tabs [role='tab'], .pro .tabs [role='tab'] { font-size: 0.72rem; padding-left: 0.15rem; padding-right: 0.15rem; }
+  .code-bar { flex-wrap: wrap; }
+  .code-examples { flex: 1 1 100%; }
+}

@@ -598,48 +598,18 @@ export const SHAPES = {
       range('smooth', 'Smoothing', 0, 1, 0.05),
     ],
     parts: (p) => {
-      const pts = (Array.isArray(p.points) ? p.points : []).map(([x, y, pr]) => [x * p.w, y * p.h, Number.isFinite(pr) ? pr : 1]);
-      if (pts.length < 2) return [];
-      const d = smoothPath(pts, p.smooth, p.closed);
-      if (p.closed) return [{ d, kind: 'fill' }];
-      const sw = p.strokeWidth || 1;
-      switch (p.brush) {
-        case 'brush': return [{ d: taperOutline(sampleSpline(pts, p.smooth, false), sw), kind: 'fill', color: p.stroke, noStroke: true }];
-        case 'marker': return [{ d, kind: 'line', sw: 1.7, opacity: 0.6 }];
-        case 'neon': return [
-          { d, kind: 'line', sw: 3.4, opacity: 0.16 },
-          { d, kind: 'line', sw: 1.8, opacity: 0.4 },
-          { d, kind: 'line', sw: 0.45, color: '#ffffff', opacity: 0.95 },
-        ];
-        case 'pencil': {
-          const r = rng(p.seed || 1);
-          const wob = (q) => q.map(([x, y, pr]) => [x + (r() - 0.5) * sw * 0.5, y + (r() - 0.5) * sw * 0.5, pr]);
-          return [
-            { d, kind: 'line', sw: 0.45, opacity: 0.85 },
-            { d: smoothPath(wob(pts), p.smooth, false), kind: 'line', sw: 0.3, opacity: 0.45 },
-            { d: smoothPath(wob(pts), p.smooth, false), kind: 'line', sw: 0.25, opacity: 0.3 },
-          ];
-        }
-        case 'dots': {
-          const line = sampleSpline(pts, p.smooth, false);
-          const gap = Math.max(4, sw * 1.9);
-          let need = 0, out = '';
-          for (let i = 1; i < line.length; i++) {
-            const [x0, y0, q0] = line[i - 1], [x1, y1] = line[i];
-            const seg = Math.hypot(x1 - x0, y1 - y0);
-            let pos = need;
-            while (pos <= seg) {
-              const t = seg ? pos / seg : 0, rr = (sw / 2) * (q0 ?? 1);
-              const cx = x0 + (x1 - x0) * t, cy = y0 + (y1 - y0) * t;
-              out += `M${r2(cx + rr)} ${r2(cy)}a${r2(rr)} ${r2(rr)} 0 1 0 ${r2(-2 * rr)} 0a${r2(rr)} ${r2(rr)} 0 1 0 ${r2(2 * rr)} 0Z`;
-              pos += gap;
-            }
-            need = pos - seg;
-          }
-          return out ? [{ d: out, kind: 'fill', color: p.stroke, noStroke: true }] : [];
-        }
-        default: return [{ d, kind: 'line' }];
+      // Points may contain null "pen lifts", so one block can hold many separate lines
+      // (code-drawn pictures use this to stay a single, editable block per color).
+      const runs = [[]];
+      for (const q of Array.isArray(p.points) ? p.points : []) {
+        if (q == null) { if (runs[runs.length - 1].length) runs.push([]); continue; }
+        const [x, y, pr] = q;
+        runs[runs.length - 1].push([x * p.w, y * p.h, Number.isFinite(pr) ? pr : 1]);
       }
+      const all = runs.filter((r) => r.length >= 2).map((pts) => strokeRun(pts, p));
+      if (!all.length) return [];
+      // Each run yields the same list of parts, so merge part k of every run into one path.
+      return all[0].map((part, k) => ({ ...part, d: all.map((r) => r[k]?.d || '').join('') }));
     },
   },
 
@@ -752,6 +722,51 @@ export function smoothPath(pts, tension = 0.6, closed = false) {
     d += `C${r2(c1[0])} ${r2(c1[1])} ${r2(c2[0])} ${r2(c2[1])} ${r2(p2[0])} ${r2(p2[1])}`;
   }
   return closed ? d + 'Z' : d;
+}
+
+
+/** The drawing parts for one continuous pen line, in the block's brush. */
+function strokeRun(pts, p) {
+  const d = smoothPath(pts, p.smooth, p.closed);
+  if (p.closed) return [{ d, kind: 'fill' }];
+  const sw = p.strokeWidth || 1;
+  switch (p.brush) {
+    case 'brush': return [{ d: taperOutline(sampleSpline(pts, p.smooth, false), sw), kind: 'fill', color: p.stroke, noStroke: true }];
+    case 'marker': return [{ d, kind: 'line', sw: 1.7, opacity: 0.6 }];
+    case 'neon': return [
+      { d, kind: 'line', sw: 3.4, opacity: 0.16 },
+      { d, kind: 'line', sw: 1.8, opacity: 0.4 },
+      { d, kind: 'line', sw: 0.45, color: '#ffffff', opacity: 0.95 },
+    ];
+    case 'pencil': {
+      const r = rng(p.seed || 1);
+      const wob = (q) => q.map(([x, y, pr]) => [x + (r() - 0.5) * sw * 0.5, y + (r() - 0.5) * sw * 0.5, pr]);
+      return [
+        { d, kind: 'line', sw: 0.45, opacity: 0.85 },
+        { d: smoothPath(wob(pts), p.smooth, false), kind: 'line', sw: 0.3, opacity: 0.45 },
+        { d: smoothPath(wob(pts), p.smooth, false), kind: 'line', sw: 0.25, opacity: 0.3 },
+      ];
+    }
+    case 'dots': {
+      const line = sampleSpline(pts, p.smooth, false);
+      const gap = Math.max(4, sw * 1.9);
+      let need = 0, out = '';
+      for (let i = 1; i < line.length; i++) {
+        const [x0, y0, q0] = line[i - 1], [x1, y1] = line[i];
+        const seg = Math.hypot(x1 - x0, y1 - y0);
+        let pos = need;
+        while (pos <= seg) {
+          const t = seg ? pos / seg : 0, rr = (sw / 2) * (q0 ?? 1);
+          const cx = x0 + (x1 - x0) * t, cy = y0 + (y1 - y0) * t;
+          out += `M${r2(cx + rr)} ${r2(cy)}a${r2(rr)} ${r2(rr)} 0 1 0 ${r2(-2 * rr)} 0a${r2(rr)} ${r2(rr)} 0 1 0 ${r2(2 * rr)} 0Z`;
+          pos += gap;
+        }
+        need = pos - seg;
+      }
+      return out ? [{ d: out, kind: 'fill', color: p.stroke, noStroke: true }] : [];
+    }
+    default: return [{ d, kind: 'line' }];
+  }
 }
 
 export const CATEGORIES = [

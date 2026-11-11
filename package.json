@@ -1,17 +1,146 @@
 {
   "name": "artful-drawing",
-  "version": "2.3.0",
-  "description": "drawing made easy: guided drawings, a symmetry pen, and simple shapes that mirror, spin and repeat.",
+  "version": "3.0.0",
+  "description": "drawing made easy: guided drawings, a symmetry pen, code you can draw with, and simple shapes that mirror, spin and repeat.",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
     "serve": "python3 -m http.server 8000",
+    "app": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:linux": "electron-builder --linux --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
     "publish": "bash scripts/publish.sh",
     "check-links": "bash scripts/check-links.sh"
   },
   "license": "MIT",
   "engines": {
     "node": ">=18"
-  }
+  },
+  "devDependencies": {
+    "electron": "^44.9.3",
+    "electron-builder": "^26.18.0"
+  },
+  "main": "electron/main.cjs",
+  "homepage": "https://normansrule.github.io/artful-drawing/",
+  "author": {
+    "name": "Normansrule",
+    "url": "https://github.com/Normansrule"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Normansrule/artful-drawing.git"
+  },
+  "build": {
+    "appId": "io.github.normansrule.artfuldrawing",
+    "productName": "artful drawing",
+    "executableName": "artful-drawing",
+    "copyright": "Copyright \u00a9 2026 artful drawing contributors (MIT)",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "*.html",
+      "favicon.svg",
+      "js/**/*",
+      "css/**/*",
+      "vendor/**/*",
+      "electron/**/*",
+      "build/icon.png",
+      "package.json",
+      "LICENSE"
+    ],
+    "publish": null,
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.graphics-design",
+      "icon": "build/icon.png",
+      "artifactName": "artful-drawing-mac-${arch}.${ext}",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "artful drawing"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "artful-drawing-windows-setup.${ext}",
+      "shortcutName": "artful drawing"
+    },
+    "portable": {
+      "artifactName": "artful-drawing-windows-portable.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Graphics",
+      "icon": "build/icon.png",
+      "artifactName": "artful-drawing-linux-${arch}.${ext}",
+      "synopsis": "Drawing made easy",
+      "description": "Draw anything with simple shapes, a symmetry pen and drawing code. Works offline.",
+      "maintainer": "Normansrule <noreply@github.com>",
+      "syncDesktopName": true
+    },
+    "deb": {
+      "artifactName": "artful-drawing-linux-amd64.deb"
+    }
+  },
+  "desktopName": "artful-drawing.desktop"
 }

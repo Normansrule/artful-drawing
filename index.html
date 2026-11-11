@@ -32,7 +32,9 @@
     <nav class="site-nav" aria-label="Pages">
       <a href="studio.html">Studio</a>
       <a href="learn.html">Learn</a>
+      <a href="manual.html">Manual</a>
       <a href="references.html">References</a>
+      <a href="#download">Download</a>
     </nav>
     <div class="top-actions">
       <a class="btn-glow btn-shimmer" href="studio.html">Start drawing</a>
@@ -228,6 +230,66 @@
       </div>
     </section>
 
+    <!-- Code -->
+    <section class="home-section code-teaser" aria-labelledby="code-title" style="padding-top:0">
+      <div class="home-wrap code-teaser-grid">
+        <div>
+          <p class="kicker">New in 3.0 · Code</p>
+          <h2 id="code-title">Draw with words. Then invent your own.</h2>
+          <p class="sub">Tell a pen where to go: <code>move</code>, <code>turn</code>, <code>repeat</code>. Teach it new instructions with <code>define</code> and keep them in your own library, ready for every drawing. Snowflakes, spirographs and whole forests in a few lines, and everything becomes shapes you can still drag and recolor.</p>
+          <div class="hero-ctas">
+            <a class="btn-glow magnet" href="studio.html#code=%2F%2F%20Change%20any%20number%20and%20watch!%0Asize%202%0Arepeat%2072%20%5B%0A%20%20color%20hue(i%20*%205)%0A%20%20repeat%2036%20%5B%20move%2026%20%20turn%2010%20%5D%0A%20%20turn%205%0A%5D">Try the Code tab <span aria-hidden="true">→</span></a>
+            <a class="btn-ghost magnet" href="manual.html#code">Read the guide</a>
+          </div>
+        </div>
+        <pre class="code-card" aria-label="Example program"><span class="c">// a snowflake that draws itself</span>
+<b>define</b> arm len depth [
+  <i>move</i> len
+  <i>if</i> depth &gt; 0 [
+    <i>turn</i> -45  arm len * 0.45 depth - 1
+    <i>turn</i> 90   arm len * 0.45 depth - 1
+    <i>turn</i> -45
+  ]
+  <i>back</i> len
+]
+<i>symmetry</i> spin 6
+arm 230 3</pre>
+      </div>
+    </section>
+
+    <!-- Download -->
+    <section class="home-section download" id="download" aria-labelledby="download-title" style="padding-top:0">
+      <div class="home-wrap">
+        <p class="kicker">Download</p>
+        <h2 id="download-title">Use it in the browser, or as an app.</h2>
+        <p class="sub">The website works on any computer, tablet or phone with nothing to install. The desktop app is the same studio in its own window: offline, private, with normal File and Edit menus. Free, for Windows, Mac and Linux.</p>
+        <div class="dl-grid">
+          <article class="dl-card" data-os="windows">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+            <h3>Windows</h3>
+            <p>Windows 10 and 11</p>
+            <a class="dl-main" href="https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-windows-setup.exe">Download installer</a>
+            <a class="dl-alt" href="https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-windows-portable.exe">Portable version (no install)</a>
+          </article>
+          <article class="dl-card" data-os="mac">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>
+            <h3>macOS</h3>
+            <p>Apple chip (M1 and newer) or Intel</p>
+            <a class="dl-main" href="https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-mac-arm64.dmg">Download for Apple chip</a>
+            <a class="dl-alt" href="https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-mac-x64.dmg">Download for Intel Mac</a>
+          </article>
+          <article class="dl-card" data-os="linux">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M12 15h5"/></svg>
+            <h3>Linux</h3>
+            <p>Any distribution (AppImage) or Ubuntu and Debian (.deb)</p>
+            <a class="dl-main" href="https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-linux-x86_64.AppImage">Download AppImage</a>
+            <a class="dl-alt" href="https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-linux-amd64.deb">Download .deb</a>
+          </article>
+        </div>
+        <p class="dl-note">The apps are free and open source but not code-signed yet, so Windows or macOS asks once before the first launch. <a href="manual.html#desktop">Two clicks fix it</a>. All versions and release notes: <a href="https://github.com/Normansrule/artful-drawing/releases">GitHub Releases</a>.</p>
+      </div>
+    </section>
+
     <section class="home-section final" aria-labelledby="final-title">
       <div class="home-wrap">
         <h2 id="final-title">What will you <span class="fx-gradient-text">draw</span>?</h2>
@@ -242,7 +304,7 @@
 
   <footer class="home-foot">
     <div class="home-wrap">
-      <p>artful drawing is free and open source under the MIT License. <a id="gh-link" href="https://github.com/">Source on GitHub</a> · <a href="learn.html">Learn</a> · <a href="references.html">References</a></p>
+      <p>artful drawing is free and open source under the MIT License. <a id="gh-link" href="https://github.com/">Source on GitHub</a> · <a href="learn.html">Learn</a> · <a href="manual.html">Manual</a> · <a href="references.html">References</a> · <a href="#download">Download the app</a></p>
       <p>Design credits: motion ideas from React Bits, Magic UI, Animate UI and Motion Primitives; ink simulation adapted from Pavel Dobryakov’s WebGL Fluid Simulation (MIT); scroll animation by GreenSock Animation Platform (GSAP), used under its free standard license; explain-by-playing inspired by Transformer Explainer and LLM Visualization.</p>
     </div>
   </footer>

@@ -6,22 +6,28 @@
 
 ### A drawing studio that helps you draw well.
 
-A free drawing studio that runs in your browser. Follow a guided drawing step by step,<br>
+A free drawing studio for your browser, and for Windows, Mac and Linux. Follow a guided drawing step by step,<br>
 doodle with a pen that draws in perfect symmetry, color in a coloring page, trace over a photo,<br>
-or build anything from simple shapes.<br>
+build anything from simple shapes, or **draw with code and invent your own instructions**.<br>
 **No drawing skills, no sign-up, nothing to install.** Just a keyboard and a mouse.
 
 [**Start drawing**](https://normansrule.github.io/artful-drawing/studio.html) ·
 [**Draw along**](https://normansrule.github.io/artful-drawing/studio.html#guide=butterfly) ·
 [**Doodle with the pen**](https://normansrule.github.io/artful-drawing/studio.html#start=pen) ·
 [**Color it in**](https://normansrule.github.io/artful-drawing/studio.html#color=butterfly) ·
+[**Draw with code**](https://normansrule.github.io/artful-drawing/studio.html#code=%2F%2F%20Change%20any%20number!%0Asize%202%0Arepeat%2072%20%5B%0A%20%20color%20hue(i%20*%205)%0A%20%20repeat%2036%20%5B%20move%2026%20%20turn%2010%20%5D%0A%20%20turn%205%0A%5D) ·
+[**Download the app**](#download-the-desktop-app) ·
+[**Manual**](https://normansrule.github.io/artful-drawing/manual.html) ·
 [**Website**](https://normansrule.github.io/artful-drawing/) ·
 [**Learn**](https://normansrule.github.io/artful-drawing/learn.html)
 
 [![Tests](https://github.com/Normansrule/artful-drawing/actions/workflows/test.yml/badge.svg)](https://github.com/Normansrule/artful-drawing/actions/workflows/test.yml)
+[![Desktop apps](https://github.com/Normansrule/artful-drawing/actions/workflows/release.yml/badge.svg)](https://github.com/Normansrule/artful-drawing/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/Normansrule/artful-drawing?label=download&color=4c8dff)](https://github.com/Normansrule/artful-drawing/releases/latest)
 ![License: MIT](https://img.shields.io/badge/license-MIT-ff4f87)
 ![No build step](https://img.shields.io/badge/build%20step-none-8b6bff)
 ![Dependencies: zero](https://img.shields.io/badge/runtime%20dependencies-0-3ee6c1)
+![Windows · macOS · Linux](https://img.shields.io/badge/apps-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-8b8d94)
 ![Keyboard friendly](https://img.shields.io/badge/keyboard-100%25-ffce3a)
 
 <img src="docs/screenshots/landing.png" alt="The artful drawing home page: the headline 'Drawing is easier than you think' over swirling ink, beside a mandala drawing itself" width="100%">
@@ -29,6 +35,47 @@ or build anything from simple shapes.<br>
 </div>
 
 ---
+
+## New in 3.0: draw with code, and make your own instructions
+
+<table>
+<tr>
+<td width="56%" valign="top"><img src="docs/media/code.gif" alt="Typing a short program in the Code tab: a snowflake arm that calls itself, spun six ways. Changing one number grows more branches; changing symmetry and color updates the preview instantly; then Add to drawing" width="100%"></td>
+<td width="44%" valign="top">
+
+The new **Code** tab draws with instructions for a pen, in the spirit of the Logo language that has taught people to code since 1967. Change a number and the preview redraws as you type.
+
+```text
+define arm len depth [
+  move len
+  if depth > 0 [
+    turn -45  arm len * 0.45 depth - 1
+    turn 90   arm len * 0.45 depth - 1
+    turn -45
+  ]
+  back len
+]
+symmetry spin 6
+arm 230 3
+```
+
+**`define` makes your own instructions.** Give one a name and the inputs it needs, and it works exactly like a built-in one, even inside itself. **Save to My instructions** keeps it in your personal library for every future drawing: your own toolkit of shapes, patterns and brushes, built from a few lines.
+
+</td>
+</tr>
+</table>
+
+- **36 instructions:** move, turn, goto, push and pop; color, fill, brush, size and symmetry; circle, star, heart, petal, polygon, dot and words; repeat, if, define, set and stop. Logo and Python-turtle words (`fd`, `rt`, `pu`, `to`…) work too.
+- **It all becomes real blocks.** Lines of one style merge into one editable stroke, so a 500-branch tree is a handful of parts you can still recolor, mirror, move and undo.
+- **Friendly errors** with the line highlighted: *I don't know the instruction "trun". Did you mean turn?*
+- **It can't freeze.** Step, depth and size limits stop runaway programs and still show what was drawn.
+- **Ten examples** to start from (spirograph, Koch snowflake, trees with leaves, heart confetti), and the [manual](https://normansrule.github.io/artful-drawing/manual.html#code) has live examples you can open in the studio with one click. Full language guide: [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md).
+
+### Also new in 3.0
+
+| | |
+|---|---|
+| <img src="docs/screenshots/palette.png" alt="The command palette over a mandala: typing 'exp' lists Export PNG, SVG, sticker and video" width="100%"> | **Command palette** (`Ctrl+K`): type a few letters of anything (a tool, a block, a picture, an export, a theme) and press Enter. Every command shows its shortcut.<br><br>**Copy, cut and paste** (`Ctrl+C` / `X` / `V`) between drawings, tabs and the desktop app. Paste a screenshot to trace over it.<br><br>**Desktop apps** for Windows, macOS and Linux: offline, private, with real menus. [Download below](#download-the-desktop-app).<br><br>**A searchable [manual](https://normansrule.github.io/artful-drawing/manual.html)** with every tool, every shortcut and nine runnable code examples. |
 
 ## You draw. It helps.
 
@@ -167,7 +214,7 @@ Lettering only uses fonts that are already on people's computers, so exported pi
 </tr>
 </table>
 
-## Four easy ways to draw
+## Four easy ways to draw (plus code)
 
 <table>
 <tr>
@@ -253,7 +300,9 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | `studio.html#guide=snowflake` | Draw along: `butterfly`, `ghost`, `christmas-tree`, `snowflake`, `easter-eggs`, `flower`, `cat` |
 | `studio.html#color=pumpkin` | A coloring page of any of the 13 pictures, with the bucket ready |
 | `studio.html#start=pen` | A night canvas with the kaleidoscope pen switched on |
+| `studio.html#start=code` | A blank canvas with the Code tab open on the first example |
 | `studio.html#template=mandala` | A finished picture, blooming into place |
+| `studio.html#code=…` | The Code tab with a program already typed in (the text after `code=` is the URL-encoded program; the manual's **Open in the studio** buttons make these) |
 
 ## The toolbox
 
@@ -294,6 +343,9 @@ Share these with anyone. They open the studio ready to go, with no menus to find
 | **Characters** | A cute face with six expressions, and Text for words |
 | **Draw along** | Seven guided drawings: butterfly, ghost, Christmas tree, snowflake, Easter eggs, flower, kitty |
 | **Bloom** (`B`) | Watch a picture assemble itself, then download it as a video |
+| **Code tab** | Draw with instructions (`move`, `turn`, `repeat`), live preview, ten examples; `define` your own instructions and keep them in **My instructions** |
+| **Command palette** (`Ctrl+K`) | Search every tool, block, picture, guide, export and theme by typing a few letters |
+| **Copy and paste** | `Ctrl+C` / `X` / `V` copies parts as text, so they paste into other drawings, tabs or the desktop app; paste a photo to trace it |
 
 ### Repeat rules: one shape becomes many
 
@@ -325,6 +377,24 @@ Solid, gradient or glow fills, **8 curated palettes**, a *color shift per copy* 
 
 ---
 
+## Download the desktop app
+
+The website needs nothing installed. If you'd rather have artful drawing in its own window, the desktop app is the same studio, works **fully offline** (it loads nothing from the internet), and has normal **File, Edit and View menus** with Save dialogs.
+
+| Computer | Download | First launch |
+|---|---|---|
+| **Windows** 10 and 11 | [Installer](https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-windows-setup.exe) · [Portable, no install](https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-windows-portable.exe) | SmartScreen: **More info → Run anyway** |
+| **macOS**, Apple chip (M1 and newer) | [artful-drawing-mac-arm64.dmg](https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-mac-arm64.dmg) | Drag to Applications. If it is blocked: **System Settings → Privacy & Security → Open Anyway** |
+| **macOS**, Intel | [artful-drawing-mac-x64.dmg](https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-mac-x64.dmg) | Same as above |
+| **Linux**, any distribution | [AppImage](https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-linux-x86_64.AppImage) | `chmod +x artful-drawing-linux-x86_64.AppImage && ./artful-drawing-linux-x86_64.AppImage` |
+| **Ubuntu / Debian / Mint** | [.deb](https://github.com/Normansrule/artful-drawing/releases/latest/download/artful-drawing-linux-amd64.deb) | `sudo apt install ./artful-drawing-linux-amd64.deb` |
+
+The one-time warnings are because the apps aren't code-signed (certificates cost money every year). GitHub builds every installer from this repository's source; the build log for each release is public under [Actions](https://github.com/Normansrule/artful-drawing/actions/workflows/release.yml).
+
+<img src="docs/screenshots/desktop-app.png" alt="artful drawing running as a Linux desktop app with File, Edit, View, Window and Help menus" width="100%">
+
+---
+
 ## Keyboard and mouse
 
 Everything works with a **keyboard alone**, a **mouse alone**, or both.
@@ -346,6 +416,8 @@ Everything works with a **keyboard alone**, a **mouse alone**, or both.
 | `M` | Mirror on or off | `Ctrl+S` | Save project file |
 | `[` / `]` | Send backward or bring forward | `G` | Guides on or off |
 | `H` | Hide | `?` | Every shortcut |
+| `Ctrl+K` | Command palette (search everything) | `Ctrl+C` / `X` / `V` | Copy, cut, paste parts |
+| `Ctrl+Enter` | Code tab: add to the drawing | `/` | Manual page: search |
 
 With a mouse: drag to move, scroll to resize, and hold `Shift` while scrolling to rotate. On a Mac, use `⌘` wherever this says `Ctrl`.
 
@@ -356,7 +428,8 @@ With a mouse: drag to move, scroll to resize, and hold `Shift` while scrolling t
 | Page | What's there |
 |---|---|
 | **Home** (`index.html`) | Live swirling ink, pictures that draw themselves, a scroll-built butterfly, a **symmetry painter** you can play with, a 3D picture carousel, and keycaps you can press |
-| **Studio** (`studio.html`) | The drawing app: pen, paint bucket, draw along, coloring pages, tracing and My drawings. A professional dark theme by default, with Light and Playful themes in the theme switcher |
+| **Studio** (`studio.html`) | The drawing app: pen, paint bucket, draw along, coloring pages, tracing, the Code tab, the command palette and My drawings. A professional dark theme by default, with Light and Playful themes in the theme switcher |
+| **Manual** (`manual.html`) | Every tool, every shortcut, the code language with nine live examples, the desktop apps, privacy and fixes. Instant search (press `/`) |
 | **Learn** (`learn.html`) | 17 friendly lessons on symmetry, the golden angle, fractals, color, composition and why cute things look cute, with 50 live examples and 4 slider playgrounds |
 | **References** (`references.html`) | Free museum collections, nature photography, pattern books, color tools, drawing courses and the projects that inspired this one |
 
@@ -409,6 +482,51 @@ GH_OWNER=your-github-name bash scripts/publish.sh
 
 After that, every update is `git add -A && git commit -m "…" && git push`.
 
+### GitHub Pages: check it, or turn it on by command
+
+```bash
+cd ~/projects/artful-drawing
+# Is Pages on? Prints the live address, or an error if it is off
+gh api "repos/{owner}/{repo}/pages" --jq '.html_url + "  (" + .status + ")"'
+
+# Turn it on (serve the main branch, root folder). Run once; "already exists" means it is on.
+gh api -X POST "repos/{owner}/{repo}/pages" -f "source[branch]=main" -f "source[path]=/"
+
+# Watch the latest build, then open the site
+gh api "repos/{owner}/{repo}/pages/builds/latest" --jq .status
+xdg-open "$(gh api "repos/{owner}/{repo}/pages" --jq .html_url)" 2>/dev/null || true
+```
+
+`{owner}` and `{repo}` are filled in by `gh` from the folder you are in; you type them exactly as shown.
+
+### Desktop apps: publish a release (GitHub builds all three)
+
+Pushing a tag that starts with `v` runs [`.github/workflows/release.yml`](.github/workflows/release.yml) on GitHub's Windows, macOS and Linux machines, then attaches the installers to a new Release. The download links in this README and on the website point at `releases/latest`, so they update by themselves.
+
+```bash
+cd ~/projects/artful-drawing
+npm test                                   # make sure everything passes first
+git tag v3.0.0                             # use the "version" from package.json
+git push origin v3.0.0
+gh run watch "$(gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+gh release view v3.0.0 --web               # the finished release, about 10 minutes later
+```
+
+For the next version, change `"version"` in `package.json` (for example to `3.1.0`), commit, then tag `v3.1.0` the same way. To build without publishing, open **Actions → Desktop apps → Run workflow**; the files appear under that run's *Artifacts*. If the push is refused with *refusing to allow … to create or update workflow*, your login needs the `workflow` scope: `gh auth refresh -h github.com -s workflow`.
+
+### Desktop apps: run or build on your own computer
+
+```bash
+cd ~/projects/artful-drawing
+npm ci                      # installs Electron and electron-builder (about 300 MB, once)
+npm run app                 # opens the desktop app straight from this folder
+npm run dist:linux          # dist/*.AppImage, dist/*.deb, dist/*.tar.gz
+npm run dist:win            # dist/*.exe   (works on Linux too)
+npm run dist:mac            # dist/*.dmg   (needs a Mac)
+```
+
+On Ubuntu, if `npm run app` complains about the sandbox, run `npm run app -- --no-sandbox` for a quick test.
+
 **Updating from a new release zip** (keeps your Git history):
 
 ```bash
@@ -454,6 +572,8 @@ flowchart LR
 - **Pen strokes** are smoothed with Catmull-Rom splines, and extra points are dropped with the Ramer-Douglas-Peucker algorithm. Each stroke is stored as normalized points, so it stays editable and resizable like any other shape.
 - **Randomness is seeded:** the same seed always gives the same sprinkle, so a share link reproduces a drawing exactly.
 - **Bloom** treats animation as a pure function of time, so the preview, the video and the home page all show the same motion.
+- **The Code tab** runs a small hand-written interpreter (tokenizer, recursive-descent parser, tree-walking evaluator; no `eval`). Its output becomes ordinary blocks, and lines of one style share one stroke block using `null` pen-lift markers, which keeps code drawings light. See [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md).
+- **The desktop app** is the same files served through a private `app://` address inside Electron (browsers block JavaScript modules on `file://` pages). It blocks all internet requests, so it is fully offline and private.
 
 The math, from symmetry groups to the golden angle and fractal dimensions, is explained in [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md).
 
@@ -461,11 +581,12 @@ The math, from symmetry groups to the golden angle and fractal dimensions, is ex
 <summary><b>Project layout</b></summary>
 
 ```
-index.html  studio.html  learn.html  references.html
+index.html  studio.html  learn.html  manual.html  references.html
 css/
   style.css      layout and design tokens      pro.css      Studio and Daylight themes (default)
   night.css      the playful Night theme
   effects.css    motion layer, pen, guides     home.css     home page
+  tools.css      Code tab, command palette     manual.css   the manual page
 js/
   shapes.js      every shape: settings + geometry (including the pen stroke)
   repeaters.js   the six repeat rules and how they stack
@@ -476,12 +597,20 @@ js/
   model.js       the drawing format and repair of broken files
   render.js      drawing → SVG (pure functions, also used by the tests)
   bloom.js       the bloom timeline and video export
-  studio.js      the studio: shelf, pen, bucket, draw along, tracing, my drawings, inspector, layers, keyboard
+  studio.js      the studio: shelf, pen, bucket, draw along, tracing, my drawings, inspector, layers, keyboard,
+                 copy/paste and the command palette's commands
+  instructions.js  the drawing language: tokenizer, parser, interpreter, toBlocks, examples
+  code-panel.js  the Code tab: editor, live preview, My instructions library, reference
+  palette.js     the command palette and its fuzzy search
+  manual.js      the manual: live code demos, generated reference, search
   home.js  toys.js  fluid.js  fx.js  theme.js  learn.js  templates.js
   share.js  color.js  util.js
 vendor/gsap/     GreenSock Animation Platform (GSAP), home page only
+electron/        main.cjs: the desktop app (app:// protocol, menus, offline, save dialogs)
+build/           icon.png for the desktop apps
+.github/workflows/  test.yml (every push), release.yml (desktop apps on v* tags)
 scripts/         publish.sh (repository + Pages), check-links.sh
-docs/            ALGORITHMS.md, CONTRIBUTING.md, DESIGN.md, screenshots, media
+docs/            ALGORITHMS.md, INSTRUCTIONS.md, CONTRIBUTING.md, DESIGN.md, screenshots, media
 tests/           Node test suite (npm test)
 ```
 
@@ -493,8 +622,12 @@ tests/           Node test suite (npm test)
 npm test    # Node.js 18 or newer, nothing to install
 ```
 
-28 tests cover the following, and GitHub Actions runs them on every push:
+47 tests cover the following, and GitHub Actions runs them on every push:
 
+- the drawing language: turtle geometry, the minus-sign rule, recursion and `stop`, friendly errors with line numbers, runaway programs, seeds, block merging with pen lifts, shapes, symmetry, the My instructions library
+- every code example in the studio, the manual and on the home page
+- the command palette's search, and that every desktop menu item runs a real studio command
+- that the desktop app packs every file the pages load
 - every shape at the edges of every slider
 - every repeat rule on every shape
 - all 13 pictures and every Learn page example
@@ -525,7 +658,7 @@ npm test    # Node.js 18 or newer, nothing to install
 
 ## Contributing
 
-Adding a shape, a repeat rule, a picture or a draw-along guide usually takes one small object in one file. [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) walks through each, and [`docs/DESIGN.md`](docs/DESIGN.md) explains the look and the motion principles.
+Adding a shape, a repeat rule, a picture, a draw-along guide or a code instruction usually takes one small object in one file. [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) walks through each, and [`docs/DESIGN.md`](docs/DESIGN.md) explains the look and the motion principles.
 
 ## Credits and licenses
 
@@ -538,7 +671,9 @@ artful drawing is released under the [MIT License](LICENSE).
 - **Animation as a function of time** comes from [Remotion](https://github.com/remotion-dev/remotion).
 - **Heads-up-display (HUD) styling** is inspired by [God's Eye View](https://github.com/bilawalsidhu/gods-eye-view) and [World Monitor](https://github.com/koala73/worldmonitor).
 - **Playfulness** comes from [Bruno Simon's folio](https://github.com/brunosimon/folio-2019).
-- **Fonts:** Bricolage Grotesque and Atkinson Hyperlegible, from Google Fonts.
+- **Fonts:** Bricolage Grotesque, Inter and Atkinson Hyperlegible, from Google Fonts (the desktop app uses your computer's own fonts).
+- **The Code tab** follows the turtle graphics of [Logo](https://el.media.mit.edu/logo-foundation/what_is_logo/logo_programming.html) (Seymour Papert, Wally Feurzeig and Cynthia Solomon, 1967).
+- **Desktop apps** are built with [Electron](https://www.electronjs.org/) and [electron-builder](https://www.electron.build/) (both MIT).
 
 <div align="center">
 

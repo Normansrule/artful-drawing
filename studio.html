@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/effects.css">
   <link rel="stylesheet" href="css/night.css">
   <link rel="stylesheet" href="css/pro.css">
+  <link rel="stylesheet" href="css/tools.css">
   <script>(function(){var t="studio";try{t=localStorage.getItem("artful-drawing:theme2")||"studio"}catch(e){}if(["studio","daylight","night"].indexOf(t)<0)t="studio";var r=document.documentElement;r.dataset.theme=t;if(t!=="night")r.classList.add("pro")})()</script>
 </head>
 <body class="page-studio">
@@ -27,9 +28,11 @@
     <nav class="site-nav" aria-label="Pages">
       <a href="studio.html" aria-current="page">Studio</a>
       <a href="learn.html">Learn</a>
+      <a href="manual.html">Manual</a>
       <a href="references.html">References</a>
     </nav>
     <div class="top-actions">
+      <button class="btn btn-cmd" id="btn-palette" title="Search every command (Ctrl+K)" aria-keyshortcuts="Control+K"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Search</span><kbd>Ctrl K</kbd></button>
       <button class="btn" id="btn-undo" title="Undo (Ctrl+Z)">Undo</button>
       <button class="btn" id="btn-redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
       <button class="btn btn-bloom" id="btn-bloom" title="Watch your picture assemble itself (B)"><span aria-hidden="true">▶</span> Bloom</button>
@@ -58,11 +61,13 @@
         <button role="tab" id="tab-blocks" aria-controls="panel-blocks" aria-selected="true">Blocks</button>
         <button role="tab" id="tab-guide" aria-controls="panel-guide" aria-selected="false" tabindex="-1">Draw along</button>
         <button role="tab" id="tab-templates" aria-controls="panel-templates" aria-selected="false" tabindex="-1">Pictures</button>
+        <button role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1">Code</button>
         <button role="tab" id="tab-helper" aria-controls="panel-helper" aria-selected="false" tabindex="-1">Helper <span class="tab-badge" id="helper-badge" hidden></span></button>
       </div>
       <div class="tab-panel" id="panel-blocks" role="tabpanel" aria-labelledby="tab-blocks"></div>
       <div class="tab-panel" id="panel-guide" role="tabpanel" aria-labelledby="tab-guide" hidden></div>
       <div class="tab-panel" id="panel-templates" role="tabpanel" aria-labelledby="tab-templates" hidden></div>
+      <div class="tab-panel" id="panel-code" role="tabpanel" aria-labelledby="tab-code" hidden></div>
       <div class="tab-panel" id="panel-helper" role="tabpanel" aria-labelledby="tab-helper" hidden></div>
     </aside>
 
@@ -227,6 +232,9 @@
             <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt><dd>Select every part</dd>
             <dt><kbd>Alt</kbd>+drag</dt><dd>Move without snapping to smart guides</dd>
             <dt><kbd>Ctrl</kbd>+<kbd>G</kbd></dt><dd>Group the selected parts (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> ungroups; <kbd>Alt</kbd>+click picks one part of a group)</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>K</kbd></dt><dd>Search every command, shape and picture</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>X</kbd> / <kbd>V</kbd></dt><dd>Copy, cut and paste parts (even between drawings). Paste a photo to trace over it.</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>Enter</kbd></dt><dd>In the Code tab: add the result to the drawing</dd>
             <dt><kbd>?</kbd></dt><dd>This list</dd>
           </dl>
         </section>
@@ -250,6 +258,7 @@
     <button class="welcome-card" data-start="pen"><span class="wc-icon" aria-hidden="true">✎</span><strong>Draw with the pen</strong><span>Draw rough, it comes out neat: wobbles are smoothed, and hold still to snap a rough circle, box or triangle into a clean one.</span></button>
     <button class="welcome-card" data-start="color"><span class="wc-icon" aria-hidden="true">🪣</span><strong>Color it in</strong><span>Coloring pages: pick a color, click a part, done. Perfect for little artists.</span></button>
     <button class="welcome-card" data-start="picture"><span class="wc-icon" aria-hidden="true">🖼</span><strong>Start from a picture</strong><span>Open a finished drawing and change anything you like.</span></button>
+    <button class="welcome-card" data-start="code"><span class="wc-icon" aria-hidden="true">{ }</span><strong>Draw with code</strong><span>Tell a pen where to go with move, turn and repeat, then invent your own instructions.</span></button>
     <button class="welcome-card" data-start="blank"><span class="wc-icon" aria-hidden="true">◻</span><strong>Blank canvas</strong><span>Pick shapes from the shelf and build your own.</span></button>
   </div>
 </dialog>

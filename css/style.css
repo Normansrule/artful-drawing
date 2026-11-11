@@ -225,7 +225,7 @@ input[type='color'] { width: 2.6rem; height: 2.1rem; padding: 2px; border: 1.5px
 .layers { border-top: 2px solid var(--ink); margin-top: 1.25rem; padding-top: 1rem; }
 .layers h2 { font-size: 1.05rem; margin: 0; }
 #layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.layer { display: grid; grid-template-columns: auto 1fr auto; align-items: center; border-radius: var(--radius-s); }
+.layer { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; border-radius: var(--radius-s); }
 .layer:hover { background: var(--tint); }
 .layer.is-selected { background: var(--ink); }
 .layer.is-selected .layer-name, .layer.is-selected .icon-btn { color: #fff; }
